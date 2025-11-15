@@ -1,0 +1,26 @@
+package de.denizaltun.vehiclesimulator.model;
+
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+
+@Builder
+public record VehicleTelemetry(
+        String vehicleId,
+        VehicleType vehicleType,
+        LocalDateTime timeStamp,
+
+        // GPS data
+        double latitude,
+        double longitude,
+
+        // vehicle metrics
+        double speed,               // km/h
+        double engineTemp,          // celcius
+        double fuelLevel,           // percentage (0 - 100)
+
+        // vehicle state
+        VehicleStatus status,
+        boolean emergencyLightsActive           // e.g., Blue Lights
+) {
+}
