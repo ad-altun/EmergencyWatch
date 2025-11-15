@@ -1,2 +1,5 @@
 .idea
 *.iml
+
+# services
+/services/vehicle-simulator/target
