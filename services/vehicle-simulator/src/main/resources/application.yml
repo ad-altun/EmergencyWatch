@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: vehicle-simulator
+
+# Vehicle simulation configuration
+app:
+  vehicles:
+    count: 5
+  telemetry:
+    interval-seconds: 3
