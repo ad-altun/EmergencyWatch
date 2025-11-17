@@ -33,7 +33,7 @@ public class KafkaPublisher {
             kafkaTemplate.send(TOPIC_NAME, telemetry.vehicleId(), telemetry);
 
             // Log for debugging (not visible in production)
-            log.debug("Published telemetry for vehicle: {}, status: {}, speed: {} km/h",
+            log.info("Published telemetry for vehicle: {}, status: {}, speed: {} km/h",
                     telemetry.vehicleId(),
                     telemetry.status(),
                     String.format("%.1f", telemetry.speed()));

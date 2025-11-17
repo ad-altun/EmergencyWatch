@@ -66,7 +66,7 @@ public class VehicleSimulatorService {
      * Scheduled task that checks all vehicles and publishes telemetry when needed.
      * Runs every 1 second for ±1 second timing accuracy.
      */
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 3000)
     public void checkAndPublish() {
         for (VehicleState vehicle : vehicles) {
             if (vehicle.shouldPublishNow()) {
