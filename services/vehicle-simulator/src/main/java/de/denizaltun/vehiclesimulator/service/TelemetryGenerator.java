@@ -31,10 +31,10 @@ public class TelemetryGenerator {
         double longitude = MUNICH_LON + (random.nextDouble() * MOVEMENT_RANGE * 2 - MOVEMENT_RANGE);
 
         // Generate metrics based on vehicle status
-        double speed = generateSpeed(vehicleState.getStatus());
-        double engineTemp = generateEngineTemp(vehicleState.getStatus());
+        double speed = generateSpeed(vehicleState.getVehicleStatus());
+        double engineTemp = generateEngineTemp(vehicleState.getVehicleStatus());
         double fuelLevel = vehicleState.getFuelLevel() - random.nextDouble() * 0.5; // Gradual fuel consumption
-        boolean lightsActive = vehicleState.getStatus() == VehicleStatus.RESPONDING;
+        boolean lightsActive = vehicleState.getVehicleStatus() == VehicleStatus.RESPONDING;
 
         // Update vehicle state for next iteration
         vehicleState.setFuelLevel(Math.max(fuelLevel, 10.0)); // Don't go below 10%
@@ -49,7 +49,7 @@ public class TelemetryGenerator {
                 .speed(speed)
                 .engineTemp(engineTemp)
                 .fuelLevel(fuelLevel)
-                .status(vehicleState.getStatus())
+                .vehicleStatus(vehicleState.getVehicleStatus())
                 .emergencyLightsActive(lightsActive)
                 .build();
     }
