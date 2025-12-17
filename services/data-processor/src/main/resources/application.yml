@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: data-processor
+
+  # PostgreSQL Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5433/emergencywatch
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update  # Creates tables automatically
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Kafka Consumer Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: data-processor-group
+      auto-offset-reset: earliest  # Start from beginning if no offset exists
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  # Trust all packages for JSON deserialization
+
+# Logging Configuration
+logging:
+  level:
+    de.denizaltun.dataprocessor: INFO
+    org.springframework.kafka: INFO
+    org.hibernate.SQL: DEBUG

@@ -78,7 +78,7 @@ public class VehicleSimulatorService {
                     // Fallback: just log the telemetry
                     log.info(String.format("Generated telemetry - Vehicle: %s, Status: %s, Speed: %.1f km/h, Fuel: %.1f%%, Lights: %s",
                             telemetry.vehicleId(),
-                            telemetry.status(),
+                            telemetry.vehicleStatus(),
                             telemetry.speed(),
                             telemetry.fuelLevel(),
                             telemetry.emergencyLightsActive() ? "ON" : "OFF"));

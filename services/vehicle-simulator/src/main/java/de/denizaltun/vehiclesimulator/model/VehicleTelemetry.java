@@ -20,7 +20,7 @@ public record VehicleTelemetry(
         double fuelLevel,           // percentage (0 - 100)
 
         // vehicle state
-        VehicleStatus status,
+        VehicleStatus vehicleStatus,
         boolean emergencyLightsActive           // e.g., Blue Lights
 ) {
 }

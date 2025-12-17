@@ -35,7 +35,7 @@ public class KafkaPublisher {
             // Log for debugging (not visible in production)
             log.info("Published telemetry for vehicle: {}, status: {}, speed: {} km/h",
                     telemetry.vehicleId(),
-                    telemetry.status(),
+                    telemetry.vehicleStatus(),
                     String.format("%.1f", telemetry.speed()));
         } catch (Exception e) {
             // If Kafka is down or network issue

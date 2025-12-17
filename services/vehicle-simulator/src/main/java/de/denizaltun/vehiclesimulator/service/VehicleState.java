@@ -14,7 +14,7 @@ public class VehicleState {
 
     private final String vehicleId;
     private final VehicleType vehicleType;
-    private VehicleStatus status;
+    private VehicleStatus vehicleStatus;
     private double fuelLevel;
     private LocalDateTime nextPublishTime;
     private int stateCounter;       // used for state transitions
@@ -24,7 +24,7 @@ public class VehicleState {
     public VehicleState(String vehicleId, VehicleType vehicleType, LocalDateTime nextPublishTime) {
         this.vehicleId = vehicleId;
         this.vehicleType = vehicleType;
-        this.status = VehicleStatus.IDLE;
+        this.vehicleStatus = VehicleStatus.IDLE;
         this.fuelLevel = 80.0 + random.nextDouble() * 20.0;     // 80 - 100%
         this.nextPublishTime = nextPublishTime;
         this.stateCounter = 0;
@@ -46,11 +46,11 @@ public class VehicleState {
     public void transitionState() {
         stateCounter++;
 
-        switch (status) {
+        switch (vehicleStatus) {
             case IDLE:
                 // 20% chance to start responding each update
                 if (random.nextDouble() < 0.2) {
-                    status = VehicleStatus.RESPONDING;
+                    vehicleStatus = VehicleStatus.RESPONDING;
                     stateCounter = 0;
                 }
                 break;
@@ -58,7 +58,7 @@ public class VehicleState {
             case RESPONDING:
                 // after ~5 updates (15 seconds), arrive on scene
                 if (stateCounter >= 5) {
-                    status = VehicleStatus.ON_SCENE;
+                    vehicleStatus = VehicleStatus.ON_SCENE;
                     stateCounter = 0;
                 }
                 break;
@@ -66,7 +66,7 @@ public class VehicleState {
             case ON_SCENE:
                 // stay on scene for ~10 updates (30 seconds)
                 if (stateCounter >=10) {
-                    status = VehicleStatus.RETURNING;
+                    vehicleStatus = VehicleStatus.RETURNING;
                     stateCounter = 0;
                 }
                 break;
@@ -74,7 +74,7 @@ public class VehicleState {
             case RETURNING:
                 // after ~5 updates, return to idle
                 if (stateCounter >= 5) {
-                    status = VehicleStatus.IDLE;
+                    vehicleStatus = VehicleStatus.IDLE;
                     stateCounter = 0;
                 }
                 break;
