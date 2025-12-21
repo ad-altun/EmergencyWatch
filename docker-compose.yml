@@ -19,6 +19,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     networks:
       - emergencywatch-network
 
@@ -33,7 +35,22 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - emergencywatch-network
+
+  # MongoDB for metrics storage
+  mongodb:
+    image: mongo:7.0
+    container_name: emergencywatch-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: emergencywatch_analytics
+    volumes:
+      - mongodb_data:/data/db
     networks:
       - emergencywatch-network
 
@@ -42,4 +59,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres-data:
+  kafka_data:
+  postgres_data:
+  mongodb_data:

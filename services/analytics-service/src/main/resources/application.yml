@@ -8,6 +8,10 @@ spring:
       group-id: analytics-service-group
       auto-offset-reset: earliest
 
+  data:
+    mongodb:
+      uri: mongodb://admin:password@localhost:27017/emergencywatch_analytics?authSource=admin
+
 server:
   port: 8082
 
