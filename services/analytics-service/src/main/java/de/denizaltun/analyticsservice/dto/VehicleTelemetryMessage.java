@@ -25,6 +25,7 @@ public class VehicleTelemetryMessage {
     private Double speed;
     private Double fuelLevel;
     private Double engineTemp;
+    private Double batteryVoltage;
     private VehicleStatus vehicleStatus;
     private Boolean emergencyLightsActive;
 }

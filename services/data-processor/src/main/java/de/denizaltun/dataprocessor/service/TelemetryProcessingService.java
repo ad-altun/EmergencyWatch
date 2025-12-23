@@ -72,6 +72,7 @@ public class TelemetryProcessingService {
                 .longitude(message.getLongitude())
                 .speed(message.getSpeed())
                 .fuelLevel(message.getFuelLevel())
+                .batteryVoltage(message.getBatteryVoltage())
                 .engineTemp(message.getEngineTemp())
                 .emergencyLightsActive(message.getEmergencyLightsActive())
                 .build();
