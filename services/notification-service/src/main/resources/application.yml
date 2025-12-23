@@ -3,7 +3,7 @@ spring:
     name: notification-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/emergencywatch
+    url: jdbc:postgresql://localhost:5433/emergencywatch
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
