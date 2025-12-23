@@ -1,18 +1,24 @@
 package de.denizaltun.analyticsservice.controller;
 
 import de.denizaltun.analyticsservice.dto.FleetAnalyticsResponse;
+import de.denizaltun.analyticsservice.dto.HistoricalMetricsResponse;
 import de.denizaltun.analyticsservice.dto.VehicleAnalyticsResponse;
 import de.denizaltun.analyticsservice.dto.VehicleType;
 import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
+import de.denizaltun.analyticsservice.scheduler.DailyAggregationScheduler;
 import de.denizaltun.analyticsservice.service.AnalyticsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,6 +33,7 @@ import java.util.stream.Collectors;
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
+    private final DailyAggregationScheduler scheduler;
 
     /**
      * Get fleet-wide analytics summary.
@@ -96,6 +103,21 @@ public class AnalyticsController {
                 "totalTelemetry", analyticsService.getFleetMetrics().getTotalTelemetryReceived().get(),
                 "fleetAverageSpeed", String.format("%.2f km/h", analyticsService.getFleetAverageSpeed())
         ));
+    }
+
+    @PostMapping("/admin/aggregate/{date}")
+    public ResponseEntity<String> triggerAggregation(@PathVariable String date) {
+        LocalDate targetDate = LocalDate.parse(date);
+        scheduler.triggerManualAggregation(targetDate);
+        return ResponseEntity.ok("Aggregation triggered for " + date);
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<HistoricalMetricsResponse> getHistoricalMetrics(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+
+        return ResponseEntity.ok(analyticsService.getHistoricalMetrics(from, to));
     }
 
     // Helper methods

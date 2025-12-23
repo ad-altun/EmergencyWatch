@@ -8,6 +8,28 @@ spring:
       group-id: analytics-service-group
       auto-offset-reset: earliest
 
+  data:
+    mongodb:
+      uri: mongodb://admin:password@localhost:27017/emergencywatch_analytics?authSource=admin
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/emergencywatch
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # only reading, analytics service should not change the schema
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
 server:
   port: 8082
 
