@@ -1,12 +1,17 @@
 package de.denizaltun.dataprocessor.service;
 
+import de.denizaltun.dataprocessor.dto.AlertEvent;
+import de.denizaltun.dataprocessor.dto.AlertType;
 import de.denizaltun.dataprocessor.dto.VehicleTelemetryMessage;
 import de.denizaltun.dataprocessor.model.VehicleTelemetry;
+import de.denizaltun.dataprocessor.model.VehicleType;
 import de.denizaltun.dataprocessor.repository.VehicleTelemetryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 /**
  * Service for processing and storing vehicle telemetry data.
@@ -18,6 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class TelemetryProcessingService {
 
     private final VehicleTelemetryRepository repository;
+    private final AlertPublisher alertPublisher;
+
+    // Alert thresholds
+    private static final double LOW_FUEL_THRESHOLD = 20.0;
+    private static final double HIGH_ENGINE_TEMP_THRESHOLD = 95.0;
+    private static final double LOW_BATTERY_12V_THRESHOLD = 11.5;
+    private static final double LOW_BATTERY_24V_THRESHOLD = 23.0;
 
     /**
      * Process incoming telemetry message from Kafka.
@@ -41,7 +53,7 @@ public class TelemetryProcessingService {
         log.debug("Saved telemetry with ID: {}", saved.getId());
 
         // Check for alert conditions
-        checkAlertConditions(saved);
+        checkAlertConditions(message);
     }
 
     /**
@@ -82,24 +94,68 @@ public class TelemetryProcessingService {
      * Check for alert conditions (low fuel, high temp, etc.).
      * For now, just log alerts. Later, we can publish to an alert topic.
      */
-    private void checkAlertConditions(VehicleTelemetry telemetry) {
+    private void checkAlertConditions(VehicleTelemetryMessage  message) {
         // Low fuel alert
-        if (telemetry.getFuelLevel() < 20.0) {
-            log.warn("⚠️ ALERT - Low fuel for vehicle {}: {}%",
-                    telemetry.getVehicleId(), telemetry.getFuelLevel());
+        if (message.getFuelLevel() < LOW_FUEL_THRESHOLD) {
+            publishAlert(message, AlertType.LOW_FUEL,
+                    String.format("Low fuel: %.1f%%", message.getFuelLevel()),
+                    LOW_FUEL_THRESHOLD,
+                    message.getFuelLevel());
         }
 
         // High engine temperature alert
-        if (telemetry.getEngineTemp() > 100.0) {
-            log.warn("⚠️ ALERT - High engine temperature for vehicle {}: {}°C",
-                    telemetry.getVehicleId(), telemetry.getEngineTemp());
+        if (message.getEngineTemp() > HIGH_ENGINE_TEMP_THRESHOLD) {
+            publishAlert(message, AlertType.HIGH_ENGINE_TEMP,
+                    String.format("High engine temp: %.1f°C", message.getEngineTemp()),
+                    HIGH_ENGINE_TEMP_THRESHOLD,
+                    message.getEngineTemp());
         }
 
+        // Low battery voltage alert (threshold depends on vehicle type)
+        checkBatteryAlert(message);
+
         // Emergency lights active during idle (potential issue)
-        if ("IDLE".equals(telemetry.getVehicleStatus().toString()) && telemetry.getEmergencyLightsActive()) {
-            log.warn("⚠️ ALERT - Emergency lights active while idle for vehicle {}",
-                    telemetry.getVehicleId());
+        // Emergency status change
+        if (message.getEmergencyLightsActive() != null && message.getEmergencyLightsActive()) {
+            publishAlert(message, AlertType.EMERGENCY_STATUS_CHANGE,
+                    "Emergency lights activated",
+                    null,
+                    null);
         }
+    }
+
+    private void checkBatteryAlert(VehicleTelemetryMessage message) {
+        if (message.getBatteryVoltage() == null || message.getVehicleType() == null) {
+            return;
+        }
+
+        double threshold = (message.getVehicleType() == VehicleType.FIRE_TRUCK)
+                ? LOW_BATTERY_24V_THRESHOLD
+                : LOW_BATTERY_12V_THRESHOLD;
+
+        if (message.getBatteryVoltage() < threshold) {
+            publishAlert(message, AlertType.LOW_BATTERY,
+                    String.format("Low battery: %.1fV (threshold: %.1fV)",
+                            message.getBatteryVoltage(), threshold),
+                    threshold,
+                    message.getBatteryVoltage());
+        }
+    }
+
+    private void publishAlert(VehicleTelemetryMessage message, AlertType alertType,
+                              String alertMessage, Double threshold, Double actualValue) {
+        AlertEvent alertEvent = AlertEvent.builder()
+                .vehicleId(message.getVehicleId())
+                .vehicleType(message.getVehicleType())
+                .alertType(alertType)
+                .message(alertMessage)
+                .thresholdValue(threshold)
+                .actualValue(actualValue)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        alertPublisher.publishAlert(alertEvent);
+        log.warn("⚠️ ALERT - {} for vehicle {}: {}", alertType, message.getVehicleId(), alertMessage);
     }
 
     /**
