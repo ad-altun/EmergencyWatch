@@ -1,5 +1,6 @@
 package de.denizaltun.analyticsservice.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,7 +13,10 @@ public class DailyVehicleMetrics {
     private String id;
 
     private String vehicleId;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
+
     private String vehicleType;
     private Double averageSpeed;
     private Double maxSpeed;

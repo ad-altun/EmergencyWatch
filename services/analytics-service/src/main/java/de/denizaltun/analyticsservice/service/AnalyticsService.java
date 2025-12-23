@@ -1,15 +1,20 @@
 package de.denizaltun.analyticsservice.service;
 
+import de.denizaltun.analyticsservice.dto.HistoricalMetricsResponse;
 import de.denizaltun.analyticsservice.dto.VehicleStatus;
 import de.denizaltun.analyticsservice.dto.VehicleTelemetryMessage;
 import de.denizaltun.analyticsservice.dto.VehicleType;
 import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
+import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
+import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +34,15 @@ public class AnalyticsService {
 
     @Getter
     private final FleetMetrics fleetMetrics = new FleetMetrics();
+
+    // constructor injection
+    private final DailyFleetMetricsRepository fleetMetricsRepository;
+    private final DailyVehicleMetricsRepository vehicleMetricsRepository;
+
+    public AnalyticsService(DailyFleetMetricsRepository fleetMetricsRepository, DailyVehicleMetricsRepository vehicleMetricsRepository) {
+        this.fleetMetricsRepository = fleetMetricsRepository;
+        this.vehicleMetricsRepository = vehicleMetricsRepository;
+    }
 
     /**
      * Process incoming telemetry message and update metrics.
@@ -130,5 +144,42 @@ public class AnalyticsService {
      */
     public int getTrackedVehicleCount() {
         return vehicleMetricsMap.size();
+    }
+
+    public HistoricalMetricsResponse getHistoricalMetrics(LocalDate from, LocalDate to) {
+
+        List<DailyFleetMetrics> fleetMetrics =
+                fleetMetricsRepository.findByDateBetweenOrderByDateAsc(from, to);
+
+        List<DailyVehicleMetrics> vehicleMetrics =
+                vehicleMetricsRepository.findByDateBetweenOrderByVehicleIdAsc(from, to);
+
+        // Calculate summary statistics
+        Double avgSpeed = fleetMetrics.stream()
+                .filter(m -> m.getFleetAverageSpeed() != null)
+                .mapToDouble(DailyFleetMetrics::getFleetAverageSpeed)
+                .average()
+                .orElse(0.0);
+
+        Double totalFuel = fleetMetrics.stream()
+                .filter(m -> m.getTotalFuelConsumed() != null)
+                .mapToDouble(DailyFleetMetrics::getTotalFuelConsumed)
+                .sum();
+
+        Integer totalPoints = vehicleMetrics.stream()
+                .filter(m -> m.getTotalTelemetryPoints() != null)
+                .mapToInt(DailyVehicleMetrics::getTotalTelemetryPoints)
+                .sum();
+
+        return HistoricalMetricsResponse.builder()
+                .fromDate(from)
+                .toDate(to)
+                .totalDays(fleetMetrics.size())
+                .averageFleetSpeed(avgSpeed)
+                .totalFuelConsumed(totalFuel)
+                .totalDataPoints(totalPoints)
+                .dailyFleetMetrics(fleetMetrics)
+                .dailyVehicleMetrics(vehicleMetrics)
+                .build();
     }
 }

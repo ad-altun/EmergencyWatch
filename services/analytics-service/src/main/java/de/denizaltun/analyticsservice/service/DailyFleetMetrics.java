@@ -1,5 +1,6 @@
 package de.denizaltun.analyticsservice.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,11 +13,13 @@ public class DailyFleetMetrics {
     @Id
     private String id;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
+
     private Integer totalVehicles;
     private Double fleetAverageSpeed;
     private Double totalFuelConsumed;
-    private Map<String, Double> averageSpeedByType; // FIRE_TRUCK, AMBULANCE
+    private Map<String, Double> averageSpeedByStatus; // IDLE,EN_ROUTE,ON_SCENE,RETURNING
 
     // Constructors
     public DailyFleetMetrics() {}
@@ -28,7 +31,7 @@ public class DailyFleetMetrics {
         this.totalVehicles = totalVehicles;
         this.fleetAverageSpeed = fleetAverageSpeed;
         this.totalFuelConsumed = totalFuelConsumed;
-        this.averageSpeedByType = averageSpeedByType;
+        this.averageSpeedByStatus = averageSpeedByType;
     }
 
     // Getters and Setters
@@ -47,8 +50,8 @@ public class DailyFleetMetrics {
     public Double getTotalFuelConsumed() { return totalFuelConsumed; }
     public void setTotalFuelConsumed(Double totalFuelConsumed) { this.totalFuelConsumed = totalFuelConsumed; }
 
-    public Map<String, Double> getAverageSpeedByType() { return averageSpeedByType; }
-    public void setAverageSpeedByType(Map<String, Double> averageSpeedByType) {
-        this.averageSpeedByType = averageSpeedByType;
+    public Map<String, Double> getAverageSpeedByStatus() { return averageSpeedByStatus; }
+    public void setAverageSpeedByStatus(Map<String, Double> averageSpeedByStatus) {
+        this.averageSpeedByStatus = averageSpeedByStatus;
     }
 }
