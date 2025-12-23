@@ -36,7 +36,6 @@ public class TelemetryGenerator {
         double engineTemp = generateEngineTemp(vehicleState.getVehicleStatus());
         double fuelLevel = vehicleState.getFuelLevel() - random.nextDouble() * 0.5; // Gradual fuel consumption
         double batteryVoltage = generateBatteryVoltage(vehicleState.getVehicleType());
-
         boolean lightsActive = vehicleState.getVehicleStatus() == VehicleStatus.RESPONDING;
 
         // Update vehicle state for next iteration
@@ -84,9 +83,15 @@ public class TelemetryGenerator {
     }
 
     private double generateBatteryVoltage(VehicleType vehicleType) {
-        double nominal = (vehicleType == VehicleType.FIRE_TRUCK) ? 24.0 : 12.0;
-        // Normal range: 95-102% of nominal
-        return nominal * (0.95 + random.nextDouble() * 0.07);
-    }
+        // Fire trucks use 24V system, others use 12V
+        double nominalVoltage = (vehicleType == VehicleType.FIRE_TRUCK) ? 24.0 : 12.0;
 
+        // Normal range: 95-102% of nominal voltage
+        // Occasionally generates low voltage to trigger alerts
+        if (random.nextDouble() < 0.05) {
+            // 5% chance of low battery (85-95% of nominal)
+            return nominalVoltage * (0.85 + random.nextDouble() * 0.10);
+        }
+        return nominalVoltage * (0.95 + random.nextDouble() * 0.07);
+    }
 }
