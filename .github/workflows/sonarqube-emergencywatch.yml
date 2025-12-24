@@ -1,0 +1,86 @@
+name: SonarQube Analysis - EmergencyWatch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin' # Alternative distribution options are available.
+          cache: 'maven'
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and Test All Services
+        run: |
+          echo "Building vehicle-simulator..."
+          mvn -f services/vehicle-simulator/pom.xml clean verify -Dmaven.test.failure.ignore=true
+    
+          echo "Building data-processor..."
+          mvn -f services/data-processor/pom.xml clean verify -Dmaven.test.failure.ignore=true
+    
+          echo "Building analytics-service..."
+          mvn -f services/analytics-service/pom.xml clean verify -Dmaven.test.failure.ignore=true
+    
+          echo "Building notification-service..."
+          mvn -f services/notification-service/pom.xml clean verify -Dmaven.test.failure.ignore=true
+
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -f services/vehicle-simulator/pom.xml sonar:sonar \
+            -Dsonar.projectKey=ad-altun_EmergencyWatch \
+            -Dsonar.organization=ad-altun \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.projectBaseDir=services/vehicle-simulator \
+            -Dsonar.moduleKey=vehicle-simulator
+          
+          mvn -f services/data-processor/pom.xml sonar:sonar \
+            -Dsonar.projectKey=ad-altun_EmergencyWatch \
+            -Dsonar.organization=ad-altun \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.projectBaseDir=services/data-processor \
+            -Dsonar.moduleKey=data-processor
+          
+          mvn -f services/analytics-service/pom.xml sonar:sonar \
+            -Dsonar.projectKey=ad-altun_EmergencyWatch \
+            -Dsonar.organization=ad-altun \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.projectBaseDir=services/analytics-service \
+            -Dsonar.moduleKey=analytics-service
+          
+          mvn -f services/notification-service/pom.xml sonar:sonar \
+            -Dsonar.projectKey=ad-altun_EmergencyWatch \
+            -Dsonar.organization=ad-altun \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.projectBaseDir=services/notification-service \
+            -Dsonar.moduleKey=notification-service
