@@ -3,6 +3,7 @@ package de.denizaltun.notificationservice.service;
 import de.denizaltun.notificationservice.dto.AlertEvent;
 import de.denizaltun.notificationservice.model.Alert;
 import de.denizaltun.notificationservice.model.AlertStatus;
+import de.denizaltun.notificationservice.model.VehicleType;
 import de.denizaltun.notificationservice.repository.AlertRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class AlertService {
         // Create new alert
         Alert alert = Alert.builder()
                 .vehicleId(event.getVehicleId())
+                .vehicleType(event.getVehicleType())
                 .alertType(event.getAlertType())
                 .status(AlertStatus.ACTIVE)
                 .message(event.getMessage())
@@ -46,7 +48,7 @@ public class AlertService {
                 .build();
 
         Alert saved = alertRepository.save(alert);
-        log.info("🚨 New alert created: {} for vehicle {}", event.getAlertType(), event.getVehicleId());
+        log.info("New alert created: {} for vehicle {}", event.getAlertType(), event.getVehicleId());
 
         return saved;
     }
@@ -81,6 +83,10 @@ public class AlertService {
 
     public List<Alert> getAlertsByVehicle(String vehicleId) {
         return alertRepository.findByVehicleId(vehicleId);
+    }
+
+    public List<Alert> getAlertsByVehicleType(VehicleType vehicleType) {
+        return alertRepository.findByVehicleType(vehicleType);
     }
 
     public List<Alert> getAllAlerts() {

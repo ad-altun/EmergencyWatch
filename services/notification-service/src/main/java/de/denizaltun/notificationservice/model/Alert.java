@@ -28,6 +28,10 @@ public class Alert {
     private String vehicleId;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_type")
+    private VehicleType vehicleType;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "alert_type", nullable = false)
     private AlertType alertType;
 

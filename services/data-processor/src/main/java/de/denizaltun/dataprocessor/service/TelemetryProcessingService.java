@@ -155,7 +155,7 @@ public class TelemetryProcessingService {
                 .build();
 
         alertPublisher.publishAlert(alertEvent);
-        log.warn("⚠️ ALERT - {} for vehicle {}: {}", alertType, message.getVehicleId(), alertMessage);
+        log.warn("ALERT - {} for vehicle {}: {}", alertType, message.getVehicleId(), alertMessage);
     }
 
     /**

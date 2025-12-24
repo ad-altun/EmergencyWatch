@@ -1,6 +1,7 @@
 package de.denizaltun.notificationservice.controller;
 
 import de.denizaltun.notificationservice.model.Alert;
+import de.denizaltun.notificationservice.model.VehicleType;
 import de.denizaltun.notificationservice.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,11 @@ public class AlertController {
     @GetMapping("/vehicle/{vehicleId}")
     public ResponseEntity<List<Alert>> getAlertsByVehicle(@PathVariable String vehicleId) {
         return ResponseEntity.ok(alertService.getAlertsByVehicle(vehicleId));
+    }
+
+    @GetMapping("/vehicle/type/{vehicleType}")
+    public ResponseEntity<List<Alert>> getAlertsByVehicleType(@PathVariable VehicleType vehicleType) {
+        return ResponseEntity.ok(alertService.getAlertsByVehicleType(vehicleType));
     }
 
     @GetMapping("/stats")
