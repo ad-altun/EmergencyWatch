@@ -2,6 +2,7 @@ package de.denizaltun.vehiclesimulator.service;
 
 import de.denizaltun.vehiclesimulator.model.VehicleStatus;
 import de.denizaltun.vehiclesimulator.model.VehicleTelemetry;
+import de.denizaltun.vehiclesimulator.model.VehicleType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,7 @@ public class TelemetryGenerator {
         double speed = generateSpeed(vehicleState.getVehicleStatus());
         double engineTemp = generateEngineTemp(vehicleState.getVehicleStatus());
         double fuelLevel = vehicleState.getFuelLevel() - random.nextDouble() * 0.5; // Gradual fuel consumption
+        double batteryVoltage = generateBatteryVoltage(vehicleState.getVehicleType());
         boolean lightsActive = vehicleState.getVehicleStatus() == VehicleStatus.RESPONDING;
 
         // Update vehicle state for next iteration
@@ -49,6 +51,7 @@ public class TelemetryGenerator {
                 .speed(speed)
                 .engineTemp(engineTemp)
                 .fuelLevel(fuelLevel)
+                .batteryVoltage(batteryVoltage)
                 .vehicleStatus(vehicleState.getVehicleStatus())
                 .emergencyLightsActive(lightsActive)
                 .build();
@@ -79,4 +82,16 @@ public class TelemetryGenerator {
         return baseTemp + random.nextDouble() * 10.0 - 5.0; // ±5°C variance
     }
 
+    private double generateBatteryVoltage(VehicleType vehicleType) {
+        // Fire trucks use 24V system, others use 12V
+        double nominalVoltage = (vehicleType == VehicleType.FIRE_TRUCK) ? 24.0 : 12.0;
+
+        // Normal range: 95-102% of nominal voltage
+        // Occasionally generates low voltage to trigger alerts
+        if (random.nextDouble() < 0.05) {
+            // 5% chance of low battery (85-95% of nominal)
+            return nominalVoltage * (0.85 + random.nextDouble() * 0.10);
+        }
+        return nominalVoltage * (0.95 + random.nextDouble() * 0.07);
+    }
 }

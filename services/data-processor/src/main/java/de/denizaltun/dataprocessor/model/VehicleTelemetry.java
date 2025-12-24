@@ -52,6 +52,9 @@ public class VehicleTelemetry {
     @Column(name = "engine_temp", nullable = false)
     private Double engineTemp; // Celsius
 
+    @Column(name = "battery_voltage", nullable = false)
+    private Double batteryVoltage; // Volts
+
     @Column(name = "emergency_lights_active", nullable = false)
     private Boolean emergencyLightsActive;
 
