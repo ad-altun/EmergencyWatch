@@ -23,21 +23,29 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
 
     @Query("SELECT SUM(v.fuelLevel) FROM VehicleTelemetry v " +
             "WHERE DATE(v.timeStamp) = :date")
-    Double calculateTotalFuelByDate(@Param("date") LocalDate date);
+    Double calculateTotalFuelLevelByDate(@Param("date") LocalDate date);
 
-    // Per vehicle status metrics (was vehicleType, now vehicleStatus)
+    // Average speed grouped by vehicle status (IDLE, EN_ROUTE, ON_SCENE, RETURNING)
     @Query("SELECT CAST(v.vehicleStatus AS string) as status, AVG(v.speed) as avgSpeed " +
             "FROM VehicleTelemetry v " +
             "WHERE DATE(v.timeStamp) = :date " +
             "GROUP BY v.vehicleStatus")
+    List<Object[]> calculateAverageSpeedByStatusAndDate(@Param("date") LocalDate date);
+
+    // Per vehicle status metrics (was vehicleType, now vehicleStatus)
+    @Query("SELECT CAST(v.vehicleType AS string) as status, AVG(v.speed) as avgSpeed " +
+            "FROM VehicleTelemetry v " +
+            "WHERE DATE(v.timeStamp) = :date " +
+            "GROUP BY v.vehicleType")
     List<Object[]> calculateAverageSpeedByTypeAndDate(@Param("date") LocalDate date);
 
-    // Per vehicle metrics
-    @Query("SELECT v.vehicleId as vehicleId, CAST(v.vehicleStatus AS string) as vehicleStatus, " +
+    @Query("SELECT v.vehicleId as vehicleId, " +
+            "CAST(v.vehicleStatus AS string) as vehicleStatus, " +
+            "CAST(v.vehicleType AS string) as vehicleType, " +
             "AVG(v.speed) as avgSpeed, MAX(v.speed) as maxSpeed, MIN(v.speed) as minSpeed, " +
             "AVG(v.fuelLevel) as avgFuel, MIN(v.fuelLevel) as minFuel, COUNT(v) as totalPoints " +
             "FROM VehicleTelemetry v " +
             "WHERE DATE(v.timeStamp) = :date " +
-            "GROUP BY v.vehicleId, v.vehicleStatus")
+            "GROUP BY v.vehicleId, v.vehicleStatus, v.vehicleType")
     List<Object[]> calculateVehicleMetricsByDate(@Param("date") LocalDate date);
 }
