@@ -1,7 +1,5 @@
-package de.denizaltun.vehiclesimulator.service;
+package de.denizaltun.vehiclesimulator.model;
 
-import de.denizaltun.vehiclesimulator.model.VehicleStatus;
-import de.denizaltun.vehiclesimulator.model.VehicleType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -41,7 +39,7 @@ public class VehicleState {
         this.nextPublishTime = this.nextPublishTime.plusSeconds(intervalSeconds);
     }
 
-    // Handles state transitions: IDLE → RESPONDING → ON_SCENE → RETURNING → IDLE
+    // Handles state transitions: IDLE → EN_ROUTE → ON_SCENE → RETURNING → IDLE
     // Transitions happen probabilistically to create realistic variety.
     public void transitionState() {
         stateCounter++;
@@ -50,12 +48,12 @@ public class VehicleState {
             case IDLE:
                 // 20% chance to start responding each update
                 if (random.nextDouble() < 0.2) {
-                    vehicleStatus = VehicleStatus.RESPONDING;
+                    vehicleStatus = VehicleStatus.EN_ROUTE;
                     stateCounter = 0;
                 }
                 break;
 
-            case RESPONDING:
+            case EN_ROUTE:
                 // after ~5 updates (15 seconds), arrive on scene
                 if (stateCounter >= 5) {
                     vehicleStatus = VehicleStatus.ON_SCENE;

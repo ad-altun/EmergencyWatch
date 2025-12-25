@@ -1,6 +1,8 @@
 package de.denizaltun.analyticsservice.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -9,6 +11,8 @@ import java.time.LocalDateTime;
  * Synchronized with data-processor's VehicleTelemetry entity.
  * This service only READS data - it does not modify the schema.
  */
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "vehicle_telemetry")
 public class VehicleTelemetry {
@@ -23,6 +27,10 @@ public class VehicleTelemetry {
     @Enumerated(EnumType.STRING)
     @Column(name = "vehicle_status", nullable = false)
     private VehicleStatus vehicleStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_type", nullable = false)
+    private VehicleStatus vehicleType;
 
     @Column(nullable = false)
     private LocalDateTime timeStamp;  // Maps to "time_stamp" column
@@ -49,17 +57,19 @@ public class VehicleTelemetry {
     private LocalDateTime createdAt;
 
     // Constructors
-    public VehicleTelemetry() {}
+//    public VehicleTelemetry() {}
 
     // Getters only (read-only entity)
-    public Long getId() { return id; }
-    public String getVehicleId() { return vehicleId; }
-    public VehicleStatus getVehicleStatus() { return vehicleStatus; }
-    public LocalDateTime getTimeStamp() { return timeStamp; }
-    public Double getLatitude() { return latitude; }
-    public Double getLongitude() { return longitude; }
-    public Double getSpeed() { return speed; }
-    public Double getFuelLevel() { return fuelLevel; }
-    public Double getEngineTemp() { return engineTemp; }
-    public Boolean getEmergencyLightsActive() { return emergencyLightsActive; }
-    public LocalDateTime getCreatedAt() { return createdAt; }}
+//    public Long getId() { return id; }
+//    public String getVehicleId() { return vehicleId; }
+//    public VehicleStatus getVehicleStatus() { return vehicleStatus; }
+//    public LocalDateTime getTimeStamp() { return timeStamp; }
+//    public Double getLatitude() { return latitude; }
+//    public Double getLongitude() { return longitude; }
+//    public Double getSpeed() { return speed; }
+//    public Double getFuelLevel() { return fuelLevel; }
+//    public Double getEngineTemp() { return engineTemp; }
+//    public Boolean getEmergencyLightsActive() { return emergencyLightsActive; }
+//    public LocalDateTime getCreatedAt() { return createdAt; }
+
+}

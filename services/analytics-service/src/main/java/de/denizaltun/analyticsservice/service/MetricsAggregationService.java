@@ -1,5 +1,8 @@
 package de.denizaltun.analyticsservice.service;
 
+import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
+import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
+import de.denizaltun.analyticsservice.entity.VehicleStatus;
 import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
 import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
 import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
@@ -53,10 +56,18 @@ public class MetricsAggregationService {
         }
 
         // PostgreSQL aggregation
-
         Integer totalVehicles = telemetryRepository.countDistinctVehiclesByDate(date);
         Double avgSpeed = telemetryRepository.calculateAverageSpeedByDate(date);
-        Double totalFuel = telemetryRepository.calculateTotalFuelByDate(date);
+        Double totalFuelLevel = telemetryRepository.calculateTotalFuelLevelByDate(date);
+
+        // Get average speed by vehicle status
+        List<Object[]> speedByStatus = telemetryRepository.calculateAverageSpeedByStatusAndDate(date);
+        Map<String, Double> speedByStatusMap = new HashMap<>();
+        for (Object[] row : speedByStatus) {
+            String status = (String) row[0];
+            Double speed = (Double) row[1];
+            speedByStatusMap.put(status, speed);
+        }
 
         // Get average speed by vehicle type
         List<Object[]> speedByType = telemetryRepository.calculateAverageSpeedByTypeAndDate(date);
@@ -67,8 +78,14 @@ public class MetricsAggregationService {
             speedByTypeMap.put(type, speed);
         }
 
+        // Create fleet metrics with all values set
         DailyFleetMetrics fleetMetrics = new DailyFleetMetrics(
-                date, totalVehicles, avgSpeed, totalFuel, speedByTypeMap
+                date,
+                totalVehicles,
+                avgSpeed,
+                totalFuelLevel,
+                speedByStatusMap,
+                speedByTypeMap
         );
 
         // Try-Catch with logging
@@ -98,19 +115,7 @@ public class MetricsAggregationService {
                 continue;
             }
 
-            String vehicleType = (String) row[1];
-            Double avgSpeed = (Double) row[2];
-            Double maxSpeed = (Double) row[3];
-            Double minSpeed = (Double) row[4];
-            Double avgFuel = (Double) row[5];
-            Double minFuel = (Double) row[6];
-            Long totalPoints = (Long) row[7];
-
-            DailyVehicleMetrics vehicleMetrics = new DailyVehicleMetrics(
-                    vehicleId, date, vehicleType,
-                    avgSpeed, maxSpeed, minSpeed,
-                    avgFuel, minFuel, totalPoints.intValue()
-            );
+            DailyVehicleMetrics vehicleMetrics = getDailyVehicleMetrics(date, row, vehicleId);
 
             // Try-Catch for each vehicle
             try {
@@ -128,5 +133,31 @@ public class MetricsAggregationService {
         if (failedCount > 0) {
             logger.warn("Some vehicle metrics failed to save. Manual intervention may be required.");
         }
+    }
+
+    private DailyVehicleMetrics getDailyVehicleMetrics(LocalDate date, Object[] row, String vehicleId) {
+        // Index 0 is vehicleId, handled by caller or separate var
+        String vehicleStatus = (String) row[1];
+        String vehicleType = (String) row[2];
+        Double avgSpeed = (Double) row[3];
+        Double maxSpeed = (Double) row[4];
+        Double minSpeed = (Double) row[5];
+        Double avgFuel = (Double) row[6];
+        Double minFuel = (Double) row[7];
+        Long totalPoints = (Long) row[8];
+
+        // Create vehicle metrics with all values set
+        return new DailyVehicleMetrics(
+                vehicleId,
+                date,
+                vehicleStatus,
+                vehicleType,
+                avgSpeed,
+                maxSpeed,
+                minSpeed,
+                avgFuel,
+                minFuel,
+                totalPoints.intValue()
+        );
     }
 }
