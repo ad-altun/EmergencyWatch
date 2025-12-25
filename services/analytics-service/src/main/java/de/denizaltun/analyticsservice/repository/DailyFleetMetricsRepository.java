@@ -1,6 +1,6 @@
 package de.denizaltun.analyticsservice.repository;
 
-import de.denizaltun.analyticsservice.service.DailyFleetMetrics;
+import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

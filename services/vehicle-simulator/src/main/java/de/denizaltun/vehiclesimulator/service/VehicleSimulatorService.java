@@ -1,6 +1,7 @@
 package de.denizaltun.vehiclesimulator.service;
 
 import de.denizaltun.vehiclesimulator.config.SimulatorConfig;
+import de.denizaltun.vehiclesimulator.model.VehicleState;
 import de.denizaltun.vehiclesimulator.model.VehicleTelemetry;
 import de.denizaltun.vehiclesimulator.model.VehicleType;
 import jakarta.annotation.PostConstruct;

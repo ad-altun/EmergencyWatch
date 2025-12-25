@@ -4,6 +4,8 @@ import de.denizaltun.analyticsservice.dto.HistoricalMetricsResponse;
 import de.denizaltun.analyticsservice.dto.VehicleStatus;
 import de.denizaltun.analyticsservice.dto.VehicleTelemetryMessage;
 import de.denizaltun.analyticsservice.dto.VehicleType;
+import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
+import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
 import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
 import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;

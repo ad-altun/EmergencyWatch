@@ -1,8 +1,8 @@
 package de.denizaltun.analyticsservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import de.denizaltun.analyticsservice.service.DailyFleetMetrics;
-import de.denizaltun.analyticsservice.service.DailyVehicleMetrics;
+import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
+import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
 import lombok.Builder;
 import lombok.Data;
 
