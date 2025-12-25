@@ -1,5 +1,6 @@
 package de.denizaltun.vehiclesimulator.service;
 
+import de.denizaltun.vehiclesimulator.model.VehicleState;
 import de.denizaltun.vehiclesimulator.model.VehicleStatus;
 import de.denizaltun.vehiclesimulator.model.VehicleTelemetry;
 import de.denizaltun.vehiclesimulator.model.VehicleType;
@@ -36,7 +37,7 @@ public class TelemetryGenerator {
         double engineTemp = generateEngineTemp(vehicleState.getVehicleStatus());
         double fuelLevel = vehicleState.getFuelLevel() - random.nextDouble() * 0.5; // Gradual fuel consumption
         double batteryVoltage = generateBatteryVoltage(vehicleState.getVehicleType());
-        boolean lightsActive = vehicleState.getVehicleStatus() == VehicleStatus.RESPONDING;
+        boolean lightsActive = vehicleState.getVehicleStatus() == VehicleStatus.EN_ROUTE;
 
         // Update vehicle state for next iteration
         vehicleState.setFuelLevel(Math.max(fuelLevel, 10.0)); // Don't go below 10%
@@ -63,7 +64,7 @@ public class TelemetryGenerator {
     private double generateSpeed(VehicleStatus status) {
         return switch (status) {
             case IDLE -> 0.0;
-            case RESPONDING -> 80.0 + random.nextDouble() * 40.0; // 80-120 km/h
+            case EN_ROUTE -> 80.0 + random.nextDouble() * 40.0; // 80-120 km/h
             case ON_SCENE -> 0.0;
             case RETURNING -> 50.0 + random.nextDouble() * 30.0; // 50-80 km/h
         };
@@ -75,7 +76,7 @@ public class TelemetryGenerator {
     private double generateEngineTemp(VehicleStatus status) {
         double baseTemp = switch (status) {
             case IDLE -> 60.0;
-            case RESPONDING -> 95.0; // Higher when driving fast
+            case EN_ROUTE -> 95.0; // Higher when driving fast
             case ON_SCENE -> 75.0;
             case RETURNING -> 85.0;
         };
