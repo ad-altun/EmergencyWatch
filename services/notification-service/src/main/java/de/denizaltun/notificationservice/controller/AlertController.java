@@ -6,7 +6,6 @@ import de.denizaltun.notificationservice.service.AlertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -65,10 +64,8 @@ public class AlertController {
     }
 
     @Operation(summary = "Acknowledge an alert", description = "Changes alert status from ACTIVE to ACKNOWLEDGED")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Alert acknowledged successfully"),
-            @ApiResponse(responseCode = "404", description = "Alert not found")
-    })
+    @ApiResponse(responseCode = "200", description = "Alert acknowledged successfully")
+    @ApiResponse(responseCode = "404", description = "Alert not found")
     @PatchMapping("/{id}/acknowledge")
     public ResponseEntity<Alert> acknowledgeAlert(
             @Parameter(description = "Alert ID", example = "1")
@@ -77,10 +74,8 @@ public class AlertController {
     }
 
     @Operation(summary = "Resolve an alert", description = "Changes alert status to RESOLVED")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Alert resolved successfully"),
-            @ApiResponse(responseCode = "404", description = "Alert not found")
-    })
+    @ApiResponse(responseCode = "200", description = "Alert acknowledged successfully")
+    @ApiResponse(responseCode = "404", description = "Alert not found")
     @PatchMapping("/{id}/resolve")
     public ResponseEntity<Alert> resolveAlert(
             @Parameter(description = "Alert ID", example = "1")

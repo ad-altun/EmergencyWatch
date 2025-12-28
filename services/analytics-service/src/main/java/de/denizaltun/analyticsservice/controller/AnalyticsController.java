@@ -11,7 +11,6 @@ import de.denizaltun.analyticsservice.service.AnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -67,10 +66,8 @@ public class AnalyticsController {
      * Get analytics for a specific vehicle.
      */
     @Operation(summary = "Get vehicle analytics", description = "Returns analytics for a specific vehicle")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved vehicle metrics"),
-            @ApiResponse(responseCode = "404", description = "Vehicle not found")
-    })
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved vehicle metrics")
+    @ApiResponse(responseCode = "404", description = "Vehicle not found")
     @GetMapping("/vehicles/{vehicleId}")
     public ResponseEntity<VehicleAnalyticsResponse> getVehicleAnalytics(
             @Parameter(description = "Unique vehicle identifier", example = "FIRE-001")
