@@ -57,30 +57,12 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -f services/vehicle-simulator/pom.xml sonar:sonar \
-            -Dsonar.projectKey=ad-altun_EmergencyWatch \
+          SONAR_COMMON="-Dsonar.projectKey=ad-altun_EmergencyWatch \
             -Dsonar.organization=ad-altun \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.projectBaseDir=services/vehicle-simulator \
-            -Dsonar.moduleKey=vehicle-simulator
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
           
-          mvn -f services/data-processor/pom.xml sonar:sonar \
-            -Dsonar.projectKey=ad-altun_EmergencyWatch \
-            -Dsonar.organization=ad-altun \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.projectBaseDir=services/data-processor \
-            -Dsonar.moduleKey=data-processor
-          
-          mvn -f services/analytics-service/pom.xml sonar:sonar \
-            -Dsonar.projectKey=ad-altun_EmergencyWatch \
-            -Dsonar.organization=ad-altun \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.projectBaseDir=services/analytics-service \
-            -Dsonar.moduleKey=analytics-service
-          
-          mvn -f services/notification-service/pom.xml sonar:sonar \
-            -Dsonar.projectKey=ad-altun_EmergencyWatch \
-            -Dsonar.organization=ad-altun \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.projectBaseDir=services/notification-service \
-            -Dsonar.moduleKey=notification-service
+          mvn -f services/vehicle-simulator/pom.xml sonar:sonar $SONAR_COMMON -Dsonar.moduleKey=vehicle-simulator
+          mvn -f services/data-processor/pom.xml sonar:sonar $SONAR_COMMON -Dsonar.moduleKey=data-processor
+          mvn -f services/analytics-service/pom.xml sonar:sonar $SONAR_COMMON -Dsonar.moduleKey=analytics-service
+          mvn -f services/notification-service/pom.xml sonar:sonar $SONAR_COMMON -Dsonar.moduleKey=notification-service
