@@ -60,7 +60,8 @@ jobs:
           SONAR_COMMON="-Dsonar.projectKey=ad-altun_EmergencyWatch \
             -Dsonar.organization=ad-altun \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.coverage.exclusions=**/config/*.java,**/dto/*.java,**/model/*.java,**/*Application.java"
           
           mvn -f services/vehicle-simulator/pom.xml sonar:sonar $SONAR_COMMON -Dsonar.moduleKey=vehicle-simulator
           mvn -f services/data-processor/pom.xml sonar:sonar $SONAR_COMMON -Dsonar.moduleKey=data-processor
