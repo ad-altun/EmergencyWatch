@@ -1,0 +1,344 @@
+openapi: 3.1.0
+info:
+  title: EmergencyWatch Analytics API
+  description: |
+    Real-time fleet analytics and historical metrics for emergency vehicles.
+    
+    This service provides:
+    - Fleet-wide metrics (average speed, fuel consumption, vehicle counts)
+    - Per-vehicle analytics with status distribution
+    - Historical metrics from MongoDB aggregations
+  version: 1.0.0
+  contact:
+    name: Deniz Altun
+    url: https://denizaltun.de
+
+servers:
+  - url: http://localhost:8082
+    description: Local development server
+
+tags:
+  - name: Fleet Analytics
+    description: Fleet-wide metrics and statistics
+  - name: Vehicle Analytics
+    description: Individual vehicle metrics
+  - name: Historical Data
+    description: Aggregated historical metrics from MongoDB
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  /api/analytics/fleet:
+    get:
+      summary: Get fleet analytics
+      description: Returns fleet-wide metrics including total vehicles, average speed, and fuel consumption
+      tags:
+        - Fleet Analytics
+      responses:
+        "200":
+          description: Successfully retrieved fleet metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetAnalyticsResponse"
+              example:
+                totalVehicles: 5
+                totalTelemetryReceived: 1250
+                fleetAverageSpeed: 45.5
+                totalFuelConsumed: 890.25
+                vehiclesByType:
+                  FIRE_TRUCK: 2
+                  AMBULANCE: 2
+                  POLICE: 1
+                averageSpeedByType:
+                  FIRE_TRUCK: 42.3
+                  AMBULANCE: 48.7
+                  POLICE: 55.2
+
+  /api/analytics/vehicles:
+    get:
+      summary: Get all vehicle analytics
+      description: Returns analytics for all tracked vehicles
+      tags:
+        - Vehicle Analytics
+      responses:
+        "200":
+          description: Successfully retrieved all vehicle metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VehicleAnalyticsResponse"
+
+  /api/analytics/vehicles/{vehicleId}:
+    get:
+      summary: Get vehicle analytics
+      description: Returns analytics for a specific vehicle
+      tags:
+        - Vehicle Analytics
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          description: Unique vehicle identifier
+          schema:
+            type: string
+          example: FIRE-001
+      responses:
+        "200":
+          description: Successfully retrieved vehicle metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleAnalyticsResponse"
+        "404":
+          description: Vehicle not found
+
+  /api/analytics/vehicles/type/{type}:
+    get:
+      summary: Get analytics by vehicle type
+      description: Returns analytics for all vehicles of a specific type
+      tags:
+        - Vehicle Analytics
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Vehicle type
+          schema:
+            $ref: "#/components/schemas/VehicleType"
+          example: FIRE_TRUCK
+      responses:
+        "200":
+          description: Successfully retrieved vehicle metrics by type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VehicleAnalyticsResponse"
+
+  /api/analytics/stats:
+    get:
+      summary: Get quick stats
+      description: Returns a quick overview of analytics statistics
+      tags:
+        - Fleet Analytics
+      responses:
+        "200":
+          description: Successfully retrieved stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trackedVehicles:
+                    type: integer
+                    example: 5
+                  totalTelemetry:
+                    type: integer
+                    example: 1250
+                  fleetAverageSpeed:
+                    type: string
+                    example: "45.50 km/h"
+
+  /api/analytics/history:
+    get:
+      summary: Get historical metrics
+      description: Retrieve aggregated metrics from MongoDB for a date range
+      tags:
+        - Historical Data
+      parameters:
+        - name: from
+          in: query
+          required: true
+          description: Start date (ISO format)
+          schema:
+            type: string
+            format: date
+          example: "2025-12-01"
+        - name: to
+          in: query
+          required: true
+          description: End date (ISO format)
+          schema:
+            type: string
+            format: date
+          example: "2025-12-28"
+      responses:
+        "200":
+          description: Successfully retrieved historical metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoricalMetricsResponse"
+
+  /api/analytics/admin/aggregate/{date}:
+    post:
+      summary: Trigger manual aggregation
+      description: Admin endpoint to manually trigger daily metrics aggregation for a specific date
+      tags:
+        - Admin
+      parameters:
+        - name: date
+          in: path
+          required: true
+          description: Date to aggregate (ISO format)
+          schema:
+            type: string
+            format: date
+          example: "2025-12-28"
+      responses:
+        "200":
+          description: Aggregation triggered successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Aggregation triggered for 2025-12-28"
+
+components:
+  schemas:
+    VehicleType:
+      type: string
+      enum:
+        - FIRE_TRUCK
+        - AMBULANCE
+        - POLICE
+      description: Type of emergency vehicle
+
+    VehicleStatus:
+      type: string
+      enum:
+        - IDLE
+        - RESPONDING
+        - ON_SCENE
+        - RETURNING
+      description: Current operational status of vehicle
+
+    FleetAnalyticsResponse:
+      type: object
+      properties:
+        totalVehicles:
+          type: integer
+          description: Total number of tracked vehicles
+        totalTelemetryReceived:
+          type: integer
+          description: Total telemetry messages received
+        fleetAverageSpeed:
+          type: number
+          format: double
+          description: Average speed across all vehicles (km/h)
+        totalFuelConsumed:
+          type: number
+          format: double
+          description: Total fuel consumed across fleet (liters)
+        vehiclesByType:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Count of vehicles by type
+        averageSpeedByType:
+          type: object
+          additionalProperties:
+            type: number
+          description: Average speed by vehicle type
+        currentStatusOverview:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Count of vehicles by current status
+
+    VehicleAnalyticsResponse:
+      type: object
+      properties:
+        vehicleId:
+          type: string
+          description: Unique vehicle identifier
+          example: FIRE-001
+        vehicleType:
+          $ref: "#/components/schemas/VehicleType"
+        averageSpeed:
+          type: number
+          format: double
+          description: Average speed (km/h)
+        totalFuelConsumed:
+          type: number
+          format: double
+          description: Total fuel consumed (liters)
+        telemetryCount:
+          type: integer
+          description: Number of telemetry messages received
+        statusDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Time spent in each status
+        firstSeen:
+          type: string
+          format: date-time
+          description: First telemetry timestamp
+        lastSeen:
+          type: string
+          format: date-time
+          description: Most recent telemetry timestamp
+
+    HistoricalMetricsResponse:
+      type: object
+      properties:
+        fleetMetrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyFleetMetrics"
+        vehicleMetrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyVehicleMetrics"
+
+    DailyFleetMetrics:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date
+        totalVehicles:
+          type: integer
+        averageSpeed:
+          type: number
+          format: double
+        totalFuelConsumed:
+          type: number
+          format: double
+
+    DailyVehicleMetrics:
+      type: object
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+        date:
+          type: string
+          format: date
+        vehicleType:
+          type: string
+        averageSpeed:
+          type: number
+          format: double
+        maxSpeed:
+          type: number
+          format: double
+        minSpeed:
+          type: number
+          format: double
+        averageFuel:
+          type: number
+          format: double
+        minFuel:
+          type: number
+          format: double
+        dataPoints:
+          type: integer

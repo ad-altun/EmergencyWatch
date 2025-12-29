@@ -124,14 +124,19 @@ curl http://localhost:8082/api/analytics/stats
 
 Full interactive API documentation is available via **Swagger UI** when running locally:
 
-| Service              | Swagger UI                            | OpenAPI Spec                                                                  |
-|----------------------|---------------------------------------|-------------------------------------------------------------------------------|
-| Analytics Service    | http://localhost:8082/swagger-ui.html | [openapi-analytics.json](docs/api-documentation/openapi-analytics.json)       |
-| Notification Service | http://localhost:8083/swagger-ui.html | [openapi-notification.json](docs/api-documentation/openapi-notification.json) |
+| Service              | Swagger UI                            | OpenAPI Spec                                                                          |
+|----------------------|---------------------------------------|---------------------------------------------------------------------------------------|
+| Analytics Service    | http://localhost:8082/swagger-ui.html | [openapi-analytics.json](docs/api-documentation/swagger/openapi-analytics.yaml)       |
+| Notification Service | http://localhost:8083/swagger-ui.html | [openapi-notification.json](docs/api-documentation/swagger/openapi-notification.yaml) |
 
-**View API specs online:**
-- [Analytics API Documentation](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/ad-altun/EmergencyWatch/main/docs/openapi-analytics.json)
-- [Notification API Documentation](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/ad-altun/EmergencyWatch/main/docs/openapi-notification.json)
+**View API Documentation Online:** 
+
+[ad-altun.github.io/EmergencyWatch/api-documentation/swagger/](https://ad-altun.github.io/EmergencyWatch/api-documentation/swagger/)
+
+Or run locally for interactive docs:
+- Analytics: http://localhost:8082/swagger-ui.html
+- Notifications: http://localhost:8083/swagger-ui.html
+
 
 ### Quick Reference
 

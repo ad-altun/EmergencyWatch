@@ -1,0 +1,254 @@
+openapi: 3.1.0
+info:
+  title: EmergencyWatch Notification API
+  description: |
+    Alert management and notification system for emergency vehicle fleet.
+    
+    This service provides:
+    - Alert lifecycle management (ACTIVE → ACKNOWLEDGED → RESOLVED)
+    - Alert deduplication to prevent duplicate active alerts
+    - Filtering by vehicle ID, vehicle type, and status
+  version: 1.0.0
+  contact:
+    name: Deniz Altun
+    url: https://denizaltun.de
+
+servers:
+  - url: http://localhost:8083
+    description: Local development server
+
+tags:
+  - name: Alerts
+    description: Alert management and queries
+
+paths:
+  /api/alerts:
+    get:
+      summary: Get all alerts
+      description: Returns all alerts regardless of status
+      tags:
+        - Alerts
+      responses:
+        "200":
+          description: List of all alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /api/alerts/active:
+    get:
+      summary: Get active alerts
+      description: Returns only alerts with ACTIVE status
+      tags:
+        - Alerts
+      responses:
+        "200":
+          description: List of active alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /api/alerts/vehicle/{vehicleId}:
+    get:
+      summary: Get alerts by vehicle
+      description: Returns all alerts for a specific vehicle
+      tags:
+        - Alerts
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          description: Vehicle identifier
+          schema:
+            type: string
+          example: AMBULANCE-002
+      responses:
+        "200":
+          description: List of alerts for the vehicle
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /api/alerts/vehicle/type/{vehicleType}:
+    get:
+      summary: Get alerts by vehicle type
+      description: Returns all alerts for vehicles of a specific type
+      tags:
+        - Alerts
+      parameters:
+        - name: vehicleType
+          in: path
+          required: true
+          description: Vehicle type
+          schema:
+            $ref: "#/components/schemas/VehicleType"
+          example: FIRE_TRUCK
+      responses:
+        "200":
+          description: List of alerts for the vehicle type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /api/alerts/stats:
+    get:
+      summary: Get alert statistics
+      description: Returns summary statistics about alerts
+      tags:
+        - Alerts
+      responses:
+        "200":
+          description: Alert statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  activeAlerts:
+                    type: integer
+                    description: Number of currently active alerts
+                    example: 3
+                  totalAlerts:
+                    type: integer
+                    description: Total number of alerts
+                    example: 15
+
+  /api/alerts/{id}/acknowledge:
+    patch:
+      summary: Acknowledge an alert
+      description: Changes alert status from ACTIVE to ACKNOWLEDGED
+      tags:
+        - Alerts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Alert ID
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        "200":
+          description: Alert acknowledged successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+        "404":
+          description: Alert not found
+
+  /api/alerts/{id}/resolve:
+    patch:
+      summary: Resolve an alert
+      description: Changes alert status to RESOLVED
+      tags:
+        - Alerts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Alert ID
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        "200":
+          description: Alert resolved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+        "404":
+          description: Alert not found
+
+components:
+  schemas:
+    VehicleType:
+      type: string
+      enum:
+        - FIRE_TRUCK
+        - AMBULANCE
+        - POLICE
+      description: Type of emergency vehicle
+
+    AlertType:
+      type: string
+      enum:
+        - LOW_FUEL
+        - HIGH_ENGINE_TEMP
+        - LOW_BATTERY
+        - VEHICLE_IDLE_TOO_LONG
+        - EMERGENCY_STATUS_CHANGE
+      description: Type of alert condition
+
+    AlertStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - ACKNOWLEDGED
+        - RESOLVED
+      description: Current status of the alert
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique alert identifier
+          example: 1
+        vehicleId:
+          type: string
+          description: Vehicle that triggered the alert
+          example: FIRE-001
+        vehicleType:
+          $ref: "#/components/schemas/VehicleType"
+        alertType:
+          $ref: "#/components/schemas/AlertType"
+        message:
+          type: string
+          description: Human-readable alert message
+          example: "Low fuel level: 15.5%"
+        status:
+          $ref: "#/components/schemas/AlertStatus"
+        threshold:
+          type: string
+          description: Threshold that was exceeded
+          example: "20%"
+        actualValue:
+          type: string
+          description: Actual value that triggered the alert
+          example: "15.5%"
+        createdAt:
+          type: string
+          format: date-time
+          description: When the alert was created
+        acknowledgedAt:
+          type: string
+          format: date-time
+          description: When the alert was acknowledged (if applicable)
+        resolvedAt:
+          type: string
+          format: date-time
+          description: When the alert was resolved (if applicable)
+      required:
+        - vehicleId
+        - vehicleType
+        - alertType
+        - message
+        - status
+        - createdAt
