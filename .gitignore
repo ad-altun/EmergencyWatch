@@ -2,7 +2,54 @@
 *.iml
 
 # services
-/services/vehicle-simulator/target
-/services/data-processor/target
-/services/analytics-service/target
-/services/notification-service/target
+/services/vehicle-simulator/HELP.md
+/services/data-processor/HELP.md
+/services/analytics-service/HELP.md
+/services/notification-service/HELP.md
+
+/services/vehicle-simulator/target/
+/services/data-processor/target/
+/services/analytics-service/target/
+/services/notification-service/target/
+
+/services//vehicle-simulator/!**/src/main/**/target/
+/services/data-processor/!**/src/main/**/target/
+/services/analytics-service/!**/src/main/**/target/
+/services/notification-service/!**/src/main/**/target/
+
+/services/vehicle-simulator/!**/src/test/**/target/
+/services/data-processor/!**/src/test/**/target/
+/services/analytics-service/!**/src/test/**/target/
+/services/notification-service!**/src/test/**/target/
+
+/services/vehicle-simulator/src/main/resources/static/
+/services/data-processor/src/main/resources/static/
+/services/analytics-service/src/main/resources/static/
+/services/notification-service/src/main/resources/static/
+
+# Frontend
+/frontend/node_modules
+/frontend/dist
+/frontend/dist-ssr
+/frontend/*.local
+
+# frontend
+# Logs
+/frontend/logs
+/frontend/*.log
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/lerna-debug.log*
+
+
+# Editor directories and files
+/frontend/.vscode/*
+/frontend/!.vscode/extensions.json
+/frontend/.DS_Store
+/frontend/*.suo
+/frontend/*.ntvs*
+/frontend/*.njsproj
+/frontend/*.sln
+/frontend/*.sw?
