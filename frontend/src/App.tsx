@@ -1,19 +1,13 @@
-import { Button } from "@/components/ui/button.tsx";
+import { MainLayout } from "@/components/layout/MainLayout.tsx";
 
 function App() {
 
   return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold text-foreground">
-                  EmergencyWatch
-              </h1>
-              <p className="text-muted-foreground">
-                  Frontend setup complete!
-              </p>
-              <Button>Test Button</Button>
+      <MainLayout>
+          <div className="flex items-center justify-center h-full">
+              <p className="text-slate-400">Dashboard content ...</p>
           </div>
-      </div>
+      </MainLayout>
   )
 }
 
