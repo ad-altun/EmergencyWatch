@@ -1,12 +1,11 @@
 import { MainLayout } from "@/components/layout/MainLayout.tsx";
+import { DashboardPage } from "@/pages/DashboardPage.tsx";
 
 function App() {
 
   return (
       <MainLayout>
-          <div className="flex items-center justify-center h-full">
-              <p className="text-slate-400">Dashboard content ...</p>
-          </div>
+          <DashboardPage />
       </MainLayout>
   )
 }
