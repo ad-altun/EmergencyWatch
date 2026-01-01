@@ -42,7 +42,7 @@ export function VehicleListPanel({ vehicles }: VehicleListPanelProps) {
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {filteredVehicles.map((vehicle) => (
-                    <VehicleRow key={vehicle.id} vehicle={vehicle} />
+                    <VehicleRow key={vehicle.vehicleId} vehicle={vehicle} />
                 ))}
             </div>
         </div>
