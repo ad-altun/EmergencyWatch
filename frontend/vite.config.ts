@@ -10,4 +10,17 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
-})
+    server: {
+        port: 5173,
+        proxy: {
+            "/api/analytics": {
+                target: "http://localhost:8082",
+                changeOrigin: true,
+            },
+            "/api/alerts": {
+                target: "http://localhost:8083",
+                changeOrigin: true,
+            },
+        },
+    },
+});

@@ -15,15 +15,15 @@ export function AveragesCard({ avgSpeed, avgResponseTime, avgFuel }: AveragesCar
             </div>
             <div className="grid grid-cols-3 gap-2">
                 <div>
-                    <p className="text-lg font-bold text-white">{avgSpeed}</p>
+                    <p className="text-lg font-bold text-white">{avgSpeed || 0}</p>
                     <p className="text-slate-500 text-xs">km/h</p>
                 </div>
                 <div className="hidden sm:block">
-                    <p className="text-lg font-bold text-white">{avgResponseTime}</p>
+                    <p className="text-lg font-bold text-white">{avgResponseTime || 0}</p>
                     <p className="text-slate-500 text-xs">min resp</p>
                 </div>
                 <div>
-                    <p className="text-lg font-bold text-white">{avgFuel}%</p>
+                    <p className="text-lg font-bold text-white">{avgFuel || 0}%</p>
                     <p className="text-slate-500 text-xs">fuel</p>
                 </div>
             </div>
