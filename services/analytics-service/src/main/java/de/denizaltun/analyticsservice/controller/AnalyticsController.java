@@ -4,6 +4,7 @@ import de.denizaltun.analyticsservice.dto.FleetAnalyticsResponse;
 import de.denizaltun.analyticsservice.dto.HistoricalMetricsResponse;
 import de.denizaltun.analyticsservice.dto.VehicleAnalyticsResponse;
 import de.denizaltun.analyticsservice.dto.VehicleType;
+import de.denizaltun.analyticsservice.entity.VehicleTelemetry;
 import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
 import de.denizaltun.analyticsservice.scheduler.DailyAggregationScheduler;
@@ -145,12 +146,19 @@ public class AnalyticsController {
         return ResponseEntity.ok(analyticsService.getHistoricalMetrics(from, to));
     }
 
+    @Operation(summary = "Get latest telemetry per vehicle", description = "Returns the most recent telemetry record for each vehicle")
+    @GetMapping("/telemetry/latest")
+    public ResponseEntity<List<VehicleTelemetry>> getLatestTelemetry() {
+        return ResponseEntity.ok(analyticsService.getLatestTelemetry());
+    }
+
     // Helper methods
 
     private VehicleAnalyticsResponse mapToResponse(VehicleMetrics metrics) {
         return VehicleAnalyticsResponse.builder()
                 .vehicleId(metrics.getVehicleId())
                 .vehicleType(metrics.getVehicleType())
+                .vehicleStatus(metrics.getVehicleStatus())
                 .averageSpeed(metrics.getAverageSpeed())
                 .totalFuelConsumed(metrics.getTotalFuelConsumed())
                 .telemetryCount(metrics.getTelemetryCount().get())

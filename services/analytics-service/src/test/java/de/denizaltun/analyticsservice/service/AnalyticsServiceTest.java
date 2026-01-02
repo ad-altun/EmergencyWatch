@@ -7,6 +7,7 @@ import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
 import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
 import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
+import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,11 +32,15 @@ class AnalyticsServiceTest {
     @Mock
     private DailyVehicleMetricsRepository vehicleMetricsRepository;
 
+    @Mock
+    private VehicleTelemetryRepository vehicleTelemetryRepository;
+
     private AnalyticsService analyticsService;
 
     @BeforeEach
     void setUp() {
-        analyticsService = new AnalyticsService(fleetMetricsRepository, vehicleMetricsRepository);
+        analyticsService = new AnalyticsService(
+                fleetMetricsRepository, vehicleMetricsRepository, vehicleTelemetryRepository);
     }
 
     @Nested

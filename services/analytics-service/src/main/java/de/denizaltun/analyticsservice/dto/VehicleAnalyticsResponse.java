@@ -14,6 +14,7 @@ import java.util.Map;
 public class VehicleAnalyticsResponse {
     private String vehicleId;
     private VehicleType vehicleType;
+    private VehicleStatus vehicleStatus;
     private double averageSpeed;
     private double totalFuelConsumed;
     private long telemetryCount;

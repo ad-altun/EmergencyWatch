@@ -33,7 +33,7 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
     List<Object[]> calculateAverageSpeedByStatusAndDate(@Param("date") LocalDate date);
 
     // Per vehicle status metrics (was vehicleType, now vehicleStatus)
-    @Query("SELECT CAST(v.vehicleType AS string) as status, AVG(v.speed) as avgSpeed " +
+    @Query("SELECT CAST(v.vehicleType AS string) as type, AVG(v.speed) as avgSpeed " +
             "FROM VehicleTelemetry v " +
             "WHERE DATE(v.timeStamp) = :date " +
             "GROUP BY v.vehicleType")
@@ -48,4 +48,9 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
             "WHERE DATE(v.timeStamp) = :date " +
             "GROUP BY v.vehicleId, v.vehicleStatus, v.vehicleType")
     List<Object[]> calculateVehicleMetricsByDate(@Param("date") LocalDate date);
+
+    @Query("SELECT v FROM VehicleTelemetry v WHERE v.timeStamp = " +
+            "(SELECT MAX(v2.timeStamp) FROM VehicleTelemetry v2 WHERE v2.vehicleId = v.vehicleId) " +
+            "ORDER BY v.vehicleId")
+    List<VehicleTelemetry> findLatestTelemetryPerVehicle();
 }

@@ -6,10 +6,12 @@ import de.denizaltun.analyticsservice.dto.VehicleTelemetryMessage;
 import de.denizaltun.analyticsservice.dto.VehicleType;
 import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
 import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
+import de.denizaltun.analyticsservice.entity.VehicleTelemetry;
 import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
 import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
 import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
+import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,10 +42,15 @@ public class AnalyticsService {
     // constructor injection
     private final DailyFleetMetricsRepository fleetMetricsRepository;
     private final DailyVehicleMetricsRepository vehicleMetricsRepository;
+    private final VehicleTelemetryRepository vehicleTelemetryRepository;
 
-    public AnalyticsService(DailyFleetMetricsRepository fleetMetricsRepository, DailyVehicleMetricsRepository vehicleMetricsRepository) {
+    public AnalyticsService(
+            DailyFleetMetricsRepository fleetMetricsRepository,
+            DailyVehicleMetricsRepository vehicleMetricsRepository,
+            VehicleTelemetryRepository vehicleTelemetryRepository) {
         this.fleetMetricsRepository = fleetMetricsRepository;
         this.vehicleMetricsRepository = vehicleMetricsRepository;
+        this.vehicleTelemetryRepository = vehicleTelemetryRepository;
     }
 
     /**
@@ -58,7 +65,7 @@ public class AnalyticsService {
                 id -> {
                     log.info("New vehicle registered: {} ({})", id, message.getVehicleType());
                     fleetMetrics.registerVehicle(message.getVehicleType());
-                    return new VehicleMetrics(id, message.getVehicleType());
+                    return new VehicleMetrics(id, message.getVehicleType(), message.getVehicleStatus());
                 }
         );
 
@@ -79,6 +86,11 @@ public class AnalyticsService {
 
         // Update fleet telemetry counter
         fleetMetrics.incrementTelemetryCount();
+    }
+
+    // get the latest telemetry record for each vehicle from postgresql
+    public List<VehicleTelemetry> getLatestTelemetry() {
+        return vehicleTelemetryRepository.findLatestTelemetryPerVehicle();
     }
 
     /**
