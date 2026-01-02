@@ -1,5 +1,6 @@
 package de.denizaltun.analyticsservice.entity;
 
+import de.denizaltun.analyticsservice.dto.VehicleType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,7 +31,7 @@ public class VehicleTelemetry {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "vehicle_type", nullable = false)
-    private VehicleStatus vehicleType;
+    private VehicleType vehicleType;
 
     @Column(nullable = false)
     private LocalDateTime timeStamp;  // Maps to "time_stamp" column
@@ -55,21 +56,4 @@ public class VehicleTelemetry {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    // Constructors
-//    public VehicleTelemetry() {}
-
-    // Getters only (read-only entity)
-//    public Long getId() { return id; }
-//    public String getVehicleId() { return vehicleId; }
-//    public VehicleStatus getVehicleStatus() { return vehicleStatus; }
-//    public LocalDateTime getTimeStamp() { return timeStamp; }
-//    public Double getLatitude() { return latitude; }
-//    public Double getLongitude() { return longitude; }
-//    public Double getSpeed() { return speed; }
-//    public Double getFuelLevel() { return fuelLevel; }
-//    public Double getEngineTemp() { return engineTemp; }
-//    public Boolean getEmergencyLightsActive() { return emergencyLightsActive; }
-//    public LocalDateTime getCreatedAt() { return createdAt; }
-
 }

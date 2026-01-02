@@ -78,6 +78,7 @@ public class TelemetryProcessingService {
     private VehicleTelemetry convertToEntity(VehicleTelemetryMessage message) {
         return VehicleTelemetry.builder()
                 .vehicleId(message.getVehicleId())
+                .vehicleType(message.getVehicleType())
                 .vehicleStatus(message.getVehicleStatus())
                 .timeStamp(message.getTimeStamp())
                 .latitude(message.getLatitude())

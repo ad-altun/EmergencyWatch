@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 @Table(name = "vehicle_telemetry", indexes = {
         @Index(name = "idx_vehicle_id", columnList = "vehicle_id"),
         @Index(name = "idx_timeStamp", columnList = "timeStamp"),
-        @Index(name = "idx_vehicle_status", columnList = "vehicle_status")
+        @Index(name = "idx_vehicle_status", columnList = "vehicle_status"),
+        @Index(name = "idx_vehicle_type", columnList = "vehicle_type")
 })
 @Data
 @Builder
@@ -30,6 +31,10 @@ public class VehicleTelemetry {
 
     @Column(name = "vehicle_id", nullable = false)
     private String vehicleId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_type", nullable = false)
+    private VehicleType vehicleType; // POLICE, AMBULANCE, FIRE_TRUCK
 
     @Column(nullable = false)
     private VehicleStatus vehicleStatus; // IDLE, EN_ROUTE, ON_SCENE, RETURNING
