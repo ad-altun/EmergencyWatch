@@ -11,7 +11,7 @@ const statusConfig: { key: VehicleStatus; label: string; color: string }[] = [
     { key: "IDLE", label: "Idle", color: "bg-emerald-500" },
     { key: "EN_ROUTE", label: "EnRoute", color: "bg-red-500" },
     { key: "ON_SCENE", label: "OnScene", color: "bg-amber-500" },
-    { key: "RETURNING", label: "Return", color: "bg-blue-500" },
+    { key: "RETURNING", label: "Return", color: "bg-violet-500" },
 ];
 
 export function StatusOverviewCard({ statusCounts }: StatusOverviewCardProps) {
