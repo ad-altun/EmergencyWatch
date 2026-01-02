@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import {
     LayoutDashboard,
     Truck,
@@ -16,11 +17,11 @@ interface SidebarProps {
 }
 
 const navItems = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { id: "vehicles", icon: Truck, label: "Vehicles" },
-    { id: "alerts", icon: Bell, label: "Alerts" },
-    { id: "analytics", icon: BarChart3, label: "Analytics" },
-    { id: "settings", icon: Settings, label: "Settings" },
+    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/" },
+    { id: "vehicles", icon: Truck, label: "Vehicles", path: "/vehicles" },
+    { id: "alerts", icon: Bell, label: "Alerts", path: "/alerts" },
+    { id: "analytics", icon: BarChart3, label: "Analytics", path: "/analytics" },
+    { id: "settings", icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps ) {
@@ -28,14 +29,21 @@ export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: Sid
         <>
             <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
                 { navItems.map(( item ) => (
-                    <button
+                    <NavLink
                         key={ item.id }
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400
-               hover:bg-slate-800 hover:text-slate-200 transition-all duration-200"
+                        to={ item.path }
+                        onClick={ onMobileClose }
+                        className={ ( { isActive } ) =>
+                            `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                                isActive
+                                    ? "bg-slate-800 text-white"
+                                    : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                            }`
+                        }
                     >
                         <item.icon size={ 20 }/>
                         { !collapsed && <span className="font-medium">{ item.label }</span> }
-                    </button>
+                    </NavLink>
                 )) }
             </nav>
 
@@ -43,7 +51,7 @@ export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: Sid
                 <button
                     onClick={ onToggle }
                     className="w-full flex items-center justify-center gap-2 px-3 py-2 text-slate-500
-           hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+                        hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
                 >
                     { collapsed ? <ChevronRight size={ 18 }/> : <ChevronLeft size={ 18 }/> }
                     { !collapsed && <span className="text-sm">Collapse</span> }

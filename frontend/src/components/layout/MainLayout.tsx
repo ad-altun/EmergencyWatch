@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
+import { Outlet } from "react-router-dom";
 
-interface MainLayoutProps {
-    children: React.ReactNode;
-}
-
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -23,7 +20,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 />
 
                 <main className="flex-1 flex flex-col min-h-0 min-w-0 p-4 overflow-auto">
-                    {children}
+                    <Outlet />
                 </main>
             </div>
         </div>
