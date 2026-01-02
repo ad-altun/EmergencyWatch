@@ -16,7 +16,7 @@ export interface DailyFleetMetrics {
     totalVehicles: number;
     fleetAverageSpeed: number | null;
     totalFuelConsumed: number | null;
-    averageSpeedByStatus: Record<string, number>;
+    averageSpeedByStatus: Record<VehicleStatus, number>;
     averageSpeedByType: Record<VehicleType, number>;
 }
 
@@ -24,7 +24,7 @@ export interface DailyVehicleMetrics {
     id: string;
     vehicleId: string;
     date: string;
-    vehicleStatus: string;
+    vehicleStatus: VehicleStatus;
     vehicleType: VehicleType;
     averageSpeed: number;
     maxSpeed: number;
@@ -43,4 +43,16 @@ export interface HistoricalMetricsResponse {
     totalDataPoints: number;
     dailyFleetMetrics: DailyFleetMetrics[];
     dailyVehicleMetrics: DailyVehicleMetrics[];
+}
+
+export interface VehicleAnalytics {
+    vehicleId: string;
+    vehicleType: VehicleType;
+    vehicleStatus: VehicleStatus;
+    averageSpeed: number;
+    totalFuelConsumed: number;
+    telemetryCount: number;
+    statusDistribution: Record<VehicleStatus, number>;
+    firstSeen: string;
+    lastSeen: string;
 }
