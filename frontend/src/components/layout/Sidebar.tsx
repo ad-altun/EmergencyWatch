@@ -1,10 +1,9 @@
 import { NavLink } from "react-router-dom";
 import {
     LayoutDashboard,
-    Truck,
-    Bell,
+    // Truck,
+    // Bell,
     BarChart3,
-    Settings,
     ChevronLeft,
     ChevronRight,
 } from "lucide-react";
@@ -18,10 +17,9 @@ interface SidebarProps {
 
 const navItems = [
     { id: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/" },
-    { id: "vehicles", icon: Truck, label: "Vehicles", path: "/vehicles" },
-    { id: "alerts", icon: Bell, label: "Alerts", path: "/alerts" },
+    // { id: "vehicles", icon: Truck, label: "Vehicles", path: "/vehicles" },
+    // { id: "alerts", icon: Bell, label: "Alerts", path: "/alerts" },
     { id: "analytics", icon: BarChart3, label: "Analytics", path: "/analytics" },
-    { id: "settings", icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps ) {

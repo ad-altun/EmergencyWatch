@@ -7,8 +7,9 @@ import java.time.LocalDateTime;
 @Builder
 public record VehicleTelemetry(
         String vehicleId,
-        VehicleType vehicleType,
         LocalDateTime timeStamp,
+        VehicleStatus vehicleStatus,
+        VehicleType vehicleType,
 
         // GPS data
         double latitude,
@@ -21,7 +22,6 @@ public record VehicleTelemetry(
         double batteryVoltage,      // Volts (12V for Police/Ambulance, 24V for Fire Truck)
 
         // vehicle state
-        VehicleStatus vehicleStatus,
         boolean emergencyLightsActive           // e.g., Blue Lights
 ) {
 }

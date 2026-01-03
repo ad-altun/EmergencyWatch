@@ -8,12 +8,12 @@ export const alertsApi = {
     },
 
     acknowledgeAlert: async (alertId: number): Promise<Alert> => {
-        const response = await axiosClient.put(`/api/alerts/${alertId}/acknowledge`);
+        const response = await axiosClient.patch(`/api/alerts/${alertId}/acknowledge`);
         return response.data;
     },
 
     resolveAlert: async (alertId: number): Promise<Alert> => {
-        const response = await axiosClient.put(`/api/alerts/${alertId}/resolve`);
+        const response = await axiosClient.patch(`/api/alerts/${alertId}/resolve`);
         return response.data;
     },
 };

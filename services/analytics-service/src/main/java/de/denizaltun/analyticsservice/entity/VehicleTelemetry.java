@@ -1,5 +1,6 @@
 package de.denizaltun.analyticsservice.entity;
 
+import de.denizaltun.analyticsservice.dto.VehicleStatus;
 import de.denizaltun.analyticsservice.dto.VehicleType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -26,12 +27,12 @@ public class VehicleTelemetry {
     private String vehicleId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "vehicle_status", nullable = false)
-    private VehicleStatus vehicleStatus;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "vehicle_type", nullable = false)
     private VehicleType vehicleType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_status", nullable = false)
+    private VehicleStatus vehicleStatus;
 
     @Column(nullable = false)
     private LocalDateTime timeStamp;  // Maps to "time_stamp" column

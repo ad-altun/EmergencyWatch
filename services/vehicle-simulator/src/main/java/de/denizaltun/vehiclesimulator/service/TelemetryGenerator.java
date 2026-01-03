@@ -36,6 +36,14 @@ public class TelemetryGenerator {
         double speed = generateSpeed(vehicleState.getVehicleStatus());
         double engineTemp = generateEngineTemp(vehicleState.getVehicleStatus());
         double fuelLevel = vehicleState.getFuelLevel() - random.nextDouble() * 0.5; // Gradual fuel consumption
+        VehicleStatus vehicleStatus = vehicleState.getVehicleStatus();
+
+        // Refuel if below 15% AND vehicle is IDLE (simulate refueling at base)
+        if (fuelLevel < 15.0 && vehicleStatus == VehicleStatus.IDLE) {
+            fuelLevel = 85.0 + random.nextDouble() * 15.0; // Refuel to 85-100%
+            log.debug("Vehicle {} refueled to {:.1f}%", vehicleState.getVehicleId(), fuelLevel);
+        }
+
         double batteryVoltage = generateBatteryVoltage(vehicleState.getVehicleType());
         boolean lightsActive = vehicleState.getVehicleStatus() == VehicleStatus.EN_ROUTE;
 

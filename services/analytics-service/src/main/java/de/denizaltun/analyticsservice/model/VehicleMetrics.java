@@ -19,6 +19,7 @@ public class VehicleMetrics {
 
     private final String vehicleId;
     private final VehicleType vehicleType;
+    private VehicleStatus vehicleStatus;
 
     // Speed metrics
     private final DoubleAdder totalSpeed = new DoubleAdder();
@@ -36,9 +37,10 @@ public class VehicleMetrics {
     private LocalDateTime firstSeen;
     private LocalDateTime lastSeen;
 
-    public VehicleMetrics(String vehicleId, VehicleType vehicleType) {
+    public VehicleMetrics(String vehicleId, VehicleType vehicleType, VehicleStatus vehicleStatus) {
         this.vehicleId = vehicleId;
         this.vehicleType = vehicleType;
+        this.vehicleStatus = vehicleStatus;
 
         // Initialize status counts
         for (VehicleStatus status : VehicleStatus.values()) {
@@ -70,6 +72,7 @@ public class VehicleMetrics {
         // Update status count
         if (status != null) {
             statusCounts.get(status).incrementAndGet();
+            this.vehicleStatus = status;
         }
 
         // Update timestamps

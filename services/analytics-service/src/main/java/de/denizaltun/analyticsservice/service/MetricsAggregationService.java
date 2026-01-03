@@ -2,7 +2,6 @@ package de.denizaltun.analyticsservice.service;
 
 import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
 import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
-import de.denizaltun.analyticsservice.entity.VehicleStatus;
 import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
 import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
 import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;

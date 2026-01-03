@@ -36,6 +36,7 @@ public class VehicleTelemetry {
     @Column(name = "vehicle_type", nullable = false)
     private VehicleType vehicleType; // POLICE, AMBULANCE, FIRE_TRUCK
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VehicleStatus vehicleStatus; // IDLE, EN_ROUTE, ON_SCENE, RETURNING
 

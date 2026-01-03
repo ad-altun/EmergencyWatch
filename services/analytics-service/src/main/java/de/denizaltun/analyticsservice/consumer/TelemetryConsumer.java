@@ -23,10 +23,11 @@ public class TelemetryConsumer {
     public void consumeTelemetry(ConsumerRecord<String, VehicleTelemetryMessage> record) {
         VehicleTelemetryMessage message = record.value();
 
-        log.debug("Received telemetry for analytics: vehicle={}, speed={}, status={}",
+        log.debug("Received telemetry for analytics: vehicle={}, speed={}, status={}, fuel_level={}",
                 message.getVehicleId(),
                 message.getSpeed(),
-                message.getVehicleStatus());
+                message.getVehicleStatus(),
+                message.getFuelLevel());
 
         try {
             analyticsService.processTelemetry(message);
