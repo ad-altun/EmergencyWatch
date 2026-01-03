@@ -1,6 +1,8 @@
 import { StatsCardGrid } from "@/components/dashboard/StatsCardGrid";
 import { VehicleListPanel } from "@/components/dashboard/VehicleListPanel";
 import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
+import { VehicleListSkeleton, FleetMetricsSkeleton } from "@/components/dashboard/skeletons";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useVehicles, useAlerts } from "@/hooks";
 import type { VehicleStatus } from "@/types";
 
@@ -8,21 +10,39 @@ export function DashboardPage() {
     const { data: vehicles = [], isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
     const { data: alerts = [], isLoading: alertsLoading, error: alertsError } = useAlerts();
 
-    const isLoading = vehiclesLoading || alertsLoading;
     const error = vehiclesError || alertsError;
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <p className="text-slate-400">Loading dashboard...</p>
-            </div>
-        );
-    }
 
     if (error) {
         return (
             <div className="flex items-center justify-center h-full">
-                <p className="text-red-400">Failed to load data. Is the backend running?</p>
+                <div className="text-center">
+                    <p className="text-red-400 font-semibold mb-2">Failed to load data</p>
+                    <p className="text-slate-400 text-sm">Please check if the backend services are running</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show skeletons while loading
+    if (vehiclesLoading || alertsLoading) {
+        return (
+            <div className="flex flex-col h-full gap-4">
+                {/* Header Skeleton */}
+                <div className="flex-shrink-0">
+                    <Skeleton className="h-7 w-48 mb-2" />
+                    <Skeleton className="h-4 w-64" />
+                </div>
+
+                {/* Stats Cards Skeleton */}
+                <div className="flex-shrink-0">
+                    <FleetMetricsSkeleton />
+                </div>
+
+                {/* Panels Skeleton */}
+                <div className="flex-1 flex gap-4 min-h-0">
+                    <VehicleListSkeleton />
+                    <VehicleListSkeleton /> {/* Reuse for alerts panel */}
+                </div>
             </div>
         );
     }

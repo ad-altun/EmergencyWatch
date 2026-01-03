@@ -1,6 +1,7 @@
 import type { Alert } from "@/types";
 import { AlertItem } from "./AlertItem";
 import { useAcknowledgeAlert, useResolveAlert } from "@/hooks";
+import { NoAlertsState } from "./empty-states";
 
 interface AlertsPanelProps {
     alerts: Alert[];
@@ -30,19 +31,21 @@ export function AlertsPanel({ alerts, criticalCount }: AlertsPanelProps) {
                 </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto min-h-0">
                 {alerts.length === 0 ? (
-                    <p className="text-slate-500 text-sm text-center py-4">No active alerts</p>
+                    <NoAlertsState />
                 ) : (
-                    alerts.map((alert) => (
-                        <AlertItem
-                            key={alert.id}
-                            alert={alert}
-                            onAcknowledge={handleAcknowledge}
-                            onResolve={handleResolve}
-                            isLoading={isLoading}
-                        />
-                    ))
+                    <div className="p-3 space-y-2">
+                        {alerts.map((alert) => (
+                            <AlertItem
+                                key={alert.id}
+                                alert={alert}
+                                onAcknowledge={handleAcknowledge}
+                                onResolve={handleResolve}
+                                isLoading={isLoading}
+                            />
+                        ))}
+                    </div>
                 )}
             </div>
 
