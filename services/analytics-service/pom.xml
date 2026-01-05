@@ -93,6 +93,18 @@
             <artifactId>swagger-models-jakarta</artifactId>
             <version>2.2.36</version>
         </dependency>
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
+            <version>4.22.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

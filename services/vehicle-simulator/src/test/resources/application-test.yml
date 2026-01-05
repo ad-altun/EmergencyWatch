@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: vehicle-simulator
+
+  # Kafka Configuration - will be overridden by @EmbeddedKafka if used in tests
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# Vehicle simulation configuration
+app:
+  vehicles:
+    count: 1  # Minimal for context loading test
+  telemetry:
+    interval-seconds: 60  # Long interval to prevent immediate scheduling
+
+logging:
+  level:
+    de.denizaltun: WARN
+    org.springframework.kafka: WARN
