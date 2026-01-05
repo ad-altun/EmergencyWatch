@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class MetricsAggregationService {
@@ -32,131 +35,97 @@ public class MetricsAggregationService {
         this.vehicleMetricsRepository = vehicleMetricsRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void aggregateMetricsForDate(LocalDate date) {
         logger.info("Starting metrics aggregation for date: {}", date);
 
-        // 1. Aggregate fleet-wide metrics
-        aggregateFleetMetrics(date);
-
-        // 2. Aggregate per-vehicle metrics
-        aggregateVehicleMetrics(date);
-
-        logger.info("Completed metrics aggregation for date: {}", date);
-    }
-
-    private void aggregateFleetMetrics(LocalDate date) {
-        logger.info("Aggregating fleet metrics for {}", date);
-
-        // Check if already exists (Idempotence)
+        // Check idempotency
         if (fleetMetricsRepository.findByDate(date).isPresent()) {
-            logger.info("Fleet metrics for {} already exist, skipping", date);
+            logger.info("Metrics for {} already exist, skipping", date);
             return;
         }
 
-        // PostgreSQL aggregation
+        // 1. Calculate fuel consumption by vehicle
+        LocalDate bufferDate = date.minusDays(2);
+        List<Object[]> fuelData = telemetryRepository.calculateFuelConsumptionByVehicle(date, date, bufferDate);
+
+        // 2. Get vehicle metrics
+        List<Object[]> vehicleData = telemetryRepository.calculateVehicleMetricsByDate(date);
+
+        // Create map of fuel consumption by vehicle ID
+        Map<String, Double> fuelByVehicle = new HashMap<>();
+        for (Object[] row : fuelData) {
+            String vehicleId = (String) row[0];
+            Double fuelConsumed = (Double) row[2];
+            fuelByVehicle.put(vehicleId, fuelConsumed);
+        }
+
+        // Calculate total daily fuel from the map (each vehicle counted once)
+        double totalDailyFuel = fuelByVehicle.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        // 3. Create and save vehicle metrics
+        // Track which vehicles we've already assigned fuel to (avoid double-counting in per-vehicle metrics)
+        Set<String> vehiclesWithFuelAssigned = new HashSet<>();
+        List<DailyVehicleMetrics> vehicleMetricsEntities = new ArrayList<>();
+
+        for (Object[] row : vehicleData) {
+            String vehicleId = (String) row[0];
+            String vehicleStatus = (String) row[1];
+            String vehicleType = (String) row[2];
+            Double avgSpeed = (Double) row[3];
+            Double maxSpeed = (Double) row[4];
+            Double minSpeed = (Double) row[5];
+            Double avgFuel = (Double) row[6];
+            Double minFuel = (Double) row[7];
+            Long totalPoints = (Long) row[8];
+
+            // Only assign fuel to first entry for each vehicle (avoid duplicates)
+            Double fuelConsumed = 0.0;
+            if (!vehiclesWithFuelAssigned.contains(vehicleId)) {
+                fuelConsumed = fuelByVehicle.getOrDefault(vehicleId, 0.0);
+                vehiclesWithFuelAssigned.add(vehicleId);
+            }
+
+            DailyVehicleMetrics vm = new DailyVehicleMetrics(
+                    vehicleId, date, vehicleStatus, vehicleType,
+                    avgSpeed, maxSpeed, minSpeed, avgFuel, minFuel,
+                    fuelConsumed, totalPoints.intValue()
+            );
+            vehicleMetricsEntities.add(vm);
+        }
+
+        vehicleMetricsRepository.saveAll(vehicleMetricsEntities);
+
+        // 4. Calculate fleet metrics
         Integer totalVehicles = telemetryRepository.countDistinctVehiclesByDate(date);
         Double avgSpeed = telemetryRepository.calculateAverageSpeedByDate(date);
-        Double totalFuelLevel = telemetryRepository.calculateTotalFuelLevelByDate(date);
 
         // Get average speed by vehicle status
         List<Object[]> speedByStatus = telemetryRepository.calculateAverageSpeedByStatusAndDate(date);
         Map<String, Double> speedByStatusMap = new HashMap<>();
         for (Object[] row : speedByStatus) {
-            String status = (String) row[0];
-            Double speed = (Double) row[1];
-            speedByStatusMap.put(status, speed);
+            speedByStatusMap.put((String) row[0], (Double) row[1]);
         }
 
         // Get average speed by vehicle type
         List<Object[]> speedByType = telemetryRepository.calculateAverageSpeedByTypeAndDate(date);
         Map<String, Double> speedByTypeMap = new HashMap<>();
         for (Object[] row : speedByType) {
-            String type = (String) row[0];
-            Double speed = (Double) row[1];
-            speedByTypeMap.put(type, speed);
+            speedByTypeMap.put((String) row[0], (Double) row[1]);
         }
 
-        // Create fleet metrics with all values set
-        DailyFleetMetrics fleetMetrics = new DailyFleetMetrics(
-                date,
-                totalVehicles,
-                avgSpeed,
-                totalFuelLevel,
-                speedByStatusMap,
-                speedByTypeMap
+        // 5. Create and save fleet metrics
+        DailyFleetMetrics fleetMetric = new DailyFleetMetrics(
+                date, totalVehicles, avgSpeed, totalDailyFuel,
+                speedByStatusMap, speedByTypeMap
         );
 
-        // Try-Catch with logging
-        try {
-            fleetMetricsRepository.save(fleetMetrics);
-            logger.info("Saved fleet metrics: {} vehicles, avg speed: {}", totalVehicles, avgSpeed);
-        } catch (Exception e) {
-            logger.error("Failed to save fleet metrics for {}: {}", date, e.getMessage(), e);
-            throw e; // Re-throw damit der Job als "failed" markiert wird
-        }
+        fleetMetricsRepository.save(fleetMetric);
+
+        logger.info("Completed metrics aggregation for date: {} ({} vehicles, {:.1f}L fuel)",
+                date, totalVehicles, totalDailyFuel);
     }
 
-    private void aggregateVehicleMetrics(LocalDate date) {
-        logger.info("Aggregating vehicle metrics for {}", date);
-
-        List<Object[]> vehicleData = telemetryRepository.calculateVehicleMetricsByDate(date);
-
-        int savedCount = 0;
-        int failedCount = 0;
-
-        for (Object[] row : vehicleData) {
-            String vehicleId = (String) row[0];
-
-            // Check if already exists
-            if (vehicleMetricsRepository.findByVehicleIdAndDate(vehicleId, date).isPresent()) {
-                logger.debug("Metrics for vehicle {} on {} already exist, skipping", vehicleId, date);
-                continue;
-            }
-
-            DailyVehicleMetrics vehicleMetrics = getDailyVehicleMetrics(date, row, vehicleId);
-
-            // Try-Catch for each vehicle
-            try {
-                vehicleMetricsRepository.save(vehicleMetrics);
-                savedCount++;
-            } catch (Exception e) {
-                logger.error("Failed to save metrics for vehicle {} on {}: {}",
-                        vehicleId, date, e.getMessage());
-                failedCount++;
-            }
-        }
-
-        logger.info("Saved metrics for {} vehicles", savedCount);
-
-        if (failedCount > 0) {
-            logger.warn("Some vehicle metrics failed to save. Manual intervention may be required.");
-        }
-    }
-
-    private DailyVehicleMetrics getDailyVehicleMetrics(LocalDate date, Object[] row, String vehicleId) {
-        // Index 0 is vehicleId, handled by caller or separate var
-        String vehicleStatus = (String) row[1];
-        String vehicleType = (String) row[2];
-        Double avgSpeed = (Double) row[3];
-        Double maxSpeed = (Double) row[4];
-        Double minSpeed = (Double) row[5];
-        Double avgFuel = (Double) row[6];
-        Double minFuel = (Double) row[7];
-        Long totalPoints = (Long) row[8];
-
-        // Create vehicle metrics with all values set
-        return new DailyVehicleMetrics(
-                vehicleId,
-                date,
-                vehicleStatus,
-                vehicleType,
-                avgSpeed,
-                maxSpeed,
-                minSpeed,
-                avgFuel,
-                minFuel,
-                totalPoints.intValue()
-        );
-    }
 }

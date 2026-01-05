@@ -18,7 +18,8 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
     Integer countDistinctVehiclesByDate(@Param("date") LocalDate date);
 
     @Query("SELECT AVG(v.speed) FROM VehicleTelemetry v " +
-            "WHERE DATE(v.timeStamp) = :date")
+            "WHERE DATE(v.timeStamp) = :date " +
+            "AND v.vehicleStatus IN ('EN_ROUTE', 'RETURNING')")
     Double calculateAverageSpeedByDate(@Param("date") LocalDate date);
 
     @Query("SELECT SUM(v.fuelLevel) FROM VehicleTelemetry v " +
@@ -32,10 +33,11 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
             "GROUP BY v.vehicleStatus")
     List<Object[]> calculateAverageSpeedByStatusAndDate(@Param("date") LocalDate date);
 
-    // Per vehicle status metrics (was vehicleType, now vehicleStatus)
+    // Average speed by vehicle type (only moving vehicles)
     @Query("SELECT CAST(v.vehicleType AS string) as type, AVG(v.speed) as avgSpeed " +
             "FROM VehicleTelemetry v " +
             "WHERE DATE(v.timeStamp) = :date " +
+            "AND v.vehicleStatus IN ('EN_ROUTE', 'RETURNING') " +
             "GROUP BY v.vehicleType")
     List<Object[]> calculateAverageSpeedByTypeAndDate(@Param("date") LocalDate date);
 
@@ -46,6 +48,7 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
             "AVG(v.fuelLevel) as avgFuel, MIN(v.fuelLevel) as minFuel, COUNT(v) as totalPoints " +
             "FROM VehicleTelemetry v " +
             "WHERE DATE(v.timeStamp) = :date " +
+            "AND v.vehicleStatus IN ('EN_ROUTE', 'RETURNING') " +
             "GROUP BY v.vehicleId, v.vehicleStatus, v.vehicleType")
     List<Object[]> calculateVehicleMetricsByDate(@Param("date") LocalDate date);
 
@@ -53,4 +56,55 @@ public interface VehicleTelemetryRepository extends JpaRepository<VehicleTelemet
             "(SELECT MAX(v2.timeStamp) FROM VehicleTelemetry v2 WHERE v2.vehicleId = v.vehicleId) " +
             "ORDER BY v.vehicleId")
     List<VehicleTelemetry> findLatestTelemetryPerVehicle();
+
+//    @Query(value =
+//            "SELECT COALESCE(SUM( " +
+//                    "  CASE vehicle_type " +
+//                    "    WHEN 'FIRE_TRUCK' THEN consumed_amount * 2.0 " +
+//                    "    WHEN 'AMBULANCE'  THEN consumed_amount * 0.8 " +
+//                    "    WHEN 'POLICE'     THEN consumed_amount * 0.6 " +
+//                    "    ELSE 0.0 " +
+//                    "  END), 0.0) " +
+//                    "FROM ( " +
+//                    "  SELECT " +
+//                    "    vehicle_type, " +
+//                    "    (prev_fuel - fuel_level) as consumed_amount " +
+//                    "  FROM ( " +
+//                    "    SELECT " +
+//                    "      vehicle_type, " +
+//                    "      fuel_level, " +
+//                    "      LAG(fuel_level) OVER (PARTITION BY vehicle_id ORDER BY time_stamp) as prev_fuel " +
+//                    "    FROM vehicle_telemetry " +
+//                    "    WHERE DATE(time_stamp) = :date " +
+//                    "  ) raw_comparisons " +
+//                    "  WHERE (prev_fuel - fuel_level) > 0 " + // This filters out Refueling (negative values)
+//                    ") calculated_drops",
+//            nativeQuery = true)
+//    Double calculateActualFuelConsumedByDate(@Param("date") LocalDate date);
+
+    @Query(value =
+            "SELECT vehicle_id, vehicle_type, " +
+                    "  COALESCE(SUM( " +
+                    "    CASE vehicle_type " +
+                    "      WHEN 'FIRE_TRUCK' THEN consumed_amount * 2.0 " +
+                    "      WHEN 'AMBULANCE'  THEN consumed_amount * 0.8 " +
+                    "      WHEN 'POLICE'     THEN consumed_amount * 0.6 " +
+                    "      ELSE 0.0 " +
+                    "    END), 0.0) as total_consumed " +
+                    "FROM (SELECT vehicle_id, vehicle_type, " +
+                    "    time_stamp, " +
+                    "    (prev_fuel - fuel_level) as consumed_amount " +
+                    "  FROM (SELECT vehicle_id, vehicle_type, time_stamp, fuel_level, " +
+                    "      LAG(fuel_level) OVER (PARTITION BY vehicle_id ORDER BY time_stamp) as prev_fuel " +
+                    "    FROM vehicle_telemetry " +
+                    "    WHERE time_stamp >= :bufferDate AND time_stamp < (CAST(:toDate AS date) + 1)) raw_comparisons " +
+                    "  WHERE (prev_fuel - fuel_level) > 0) calculated_drops " +
+                    "WHERE DATE(time_stamp) BETWEEN :fromDate AND :toDate " +
+                    "GROUP BY vehicle_id, vehicle_type ORDER BY vehicle_id",
+            nativeQuery = true)
+    List<Object[]> calculateFuelConsumptionByVehicle(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("bufferDate") LocalDate bufferDate);
+
 }

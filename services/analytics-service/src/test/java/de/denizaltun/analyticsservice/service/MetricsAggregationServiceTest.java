@@ -297,7 +297,7 @@ class MetricsAggregationServiceTest {
 
             // Existing metrics found
             DailyVehicleMetrics existing = new DailyVehicleMetrics(
-                    "FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 100
+                    "FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 60.0, 100
             );
             when(vehicleMetricsRepository.findByVehicleIdAndDate("FIRE_TRUCK_001", testDate))
                     .thenReturn(Optional.of(existing));
