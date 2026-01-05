@@ -42,16 +42,16 @@ jobs:
       - name: Build and Test All Services
         run: |
           echo "Building vehicle-simulator..."
-          mvn -f services/vehicle-simulator/pom.xml clean verify -Dmaven.test.failure.ignore=true
+          mvn -f services/vehicle-simulator/pom.xml clean verify
     
           echo "Building data-processor..."
-          mvn -f services/data-processor/pom.xml clean verify -Dmaven.test.failure.ignore=true
+          mvn -f services/data-processor/pom.xml clean verify
     
           echo "Building analytics-service..."
-          mvn -f services/analytics-service/pom.xml clean verify -Dmaven.test.failure.ignore=true
+          mvn -f services/analytics-service/pom.xml clean verify
     
           echo "Building notification-service..."
-          mvn -f services/notification-service/pom.xml clean verify -Dmaven.test.failure.ignore=true
+          mvn -f services/notification-service/pom.xml clean verify
 
       - name: SonarQube Scan
         env:
