@@ -12,4 +12,4 @@ app:
   vehicles:
     count: 5
   telemetry:
-    interval-seconds: 3
+    interval-seconds: 15
