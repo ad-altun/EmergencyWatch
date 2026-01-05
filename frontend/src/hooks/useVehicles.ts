@@ -5,6 +5,6 @@ export function useVehicles() {
     return useQuery({
         queryKey: ["vehicles"],
         queryFn: telemetryApi.getLatestTelemetry,
-        refetchInterval: 5000,
+        refetchInterval: 15000,
     });
 }

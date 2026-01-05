@@ -5,7 +5,7 @@ export function useAlerts() {
     return useQuery({
         queryKey: ["alerts"],
         queryFn: alertsApi.getActiveAlerts,
-        refetchInterval: 5000,
+        refetchInterval: 15000,
     });
 }
 

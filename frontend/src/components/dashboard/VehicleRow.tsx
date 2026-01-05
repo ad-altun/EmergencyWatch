@@ -1,4 +1,4 @@
-import { Gauge, Fuel, Thermometer } from "lucide-react";
+import { Gauge, Fuel, Thermometer, Plug2, Siren } from "lucide-react";
 import type { VehicleTelemetry, VehicleStatus, VehicleType } from "@/types";
 
 interface VehicleRowProps {
@@ -31,9 +31,13 @@ export function VehicleRow( { vehicle }: VehicleRowProps ) {
 
             <div className="flex items-center gap-8">
                 <div className="hidden md:flex items-center gap-3 text-xs text-slate-400">
-          <span className="flex items-center justify-between min-w-[4rem] gap-x-1">
+                    { vehicle.emergencyLightsActive ?
+                        ( <span className="flex items-center justify-between min-w-[1rem] gap-x-1">
+            <Siren size={ 16 } color="blue" />
+          </span> ) : "" } |
+                    <span className="flex items-center justify-between min-w-[4rem] gap-x-1">
             <Gauge size={ 12 }/>
-              { vehicle.speed.toFixed(0) } km/h
+                        { vehicle.speed.toFixed(0) } km/h
           </span> |
                     <span className={ `flex items-center gap-1 ${ vehicle.fuelLevel < 40 ? "text-amber-400" : "" }` }>
             <Fuel size={ 12 }/>
@@ -42,6 +46,10 @@ export function VehicleRow( { vehicle }: VehicleRowProps ) {
                     <span className={ `flex items-center gap-1 ${ vehicle.engineTemp > 93 ? "text-red-400" : "" }` }>
             <Thermometer size={ 12 }/>
                         { vehicle.engineTemp.toFixed(1) }°
+          </span> |
+                    <span className={ `flex items-center gap-1 ${ "" }` }>
+            <Plug2 size={ 12 }/>
+                        { vehicle.batteryVoltage.toFixed(2) } V
           </span>
                 </div>
 
