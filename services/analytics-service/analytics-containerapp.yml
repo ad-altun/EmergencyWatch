@@ -1,0 +1,55 @@
+name: emergencywatch-analytics-service
+type: Microsoft.Web/containerApps
+location: westeurope
+
+properties:
+  managedEnvironmentId: /subscriptions/<SUB_ID>/resourceGroups/<RG>/providers/Microsoft.Web/managedEnvironments/<ENV_NAME>
+
+  configuration:
+    ingress:
+      external: false
+      targetPort: 8082
+      traffic:
+        - latestRevision: true
+          weight: 100
+
+    registries:
+      - server: <ACR_NAME>.azurecr.io
+        identity: system
+
+  template:
+    containers:
+      - name: analytics-service
+        image: <ACR_NAME>.azurecr.io/emergencywatch/analytics-service:latest
+
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: prod
+
+        probes:
+          - type: Readiness
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          - type: Liveness
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+    scale:
+      minReplicas: 0
+      maxReplicas: 3
+      rules:
+        - name: http-scale
+          http:
+            metadata:
+              concurrentRequests: "50"

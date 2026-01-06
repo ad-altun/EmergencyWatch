@@ -1,4 +1,8 @@
 services:
+  # ============================================
+  # INFRASTRUCTURE
+  # ============================================
+
   # Kafka broker for vehicle telemetry messaging
   kafka:
     image: apache/kafka:latest
@@ -10,7 +14,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
@@ -23,6 +27,12 @@ services:
       - kafka_data:/var/lib/kafka/data
     networks:
       - emergencywatch-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # PostgreSQL database for telemetry storage
   postgres:
@@ -38,6 +48,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - emergencywatch-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MongoDB for metrics storage
   mongodb:
@@ -53,6 +68,99 @@ services:
       - mongodb_data:/data/db
     networks:
       - emergencywatch-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # MICROSERVICES
+  # ============================================
+
+  # Vehicle Simulator - Generates telemetry data
+  vehicle-simulator:
+    build:
+      context: ./services/vehicle-simulator
+      dockerfile: Dockerfile
+    container_name: vehicle-simulator
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - emergencywatch-network
+    restart: unless-stopped
+
+  # Data Processor - Processes telemetry & detects alerts
+  data-processor:
+    build:
+      context: ./services/data-processor
+      dockerfile: Dockerfile
+    container_name: data-processor
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emergencywatch
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - emergencywatch-network
+    restart: unless-stopped
+
+  # Analytics Service - Fleet analytics & historical metrics
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emergencywatch
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongodb:27017/emergencywatch_analytics?authSource=admin
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - emergencywatch-network
+    restart: unless-stopped
+
+  # Notification Service - Alert management
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emergencywatch
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - emergencywatch-network
+    restart: unless-stopped
 
 networks:
   emergencywatch-network:

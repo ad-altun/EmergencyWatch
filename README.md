@@ -12,6 +12,7 @@ This project demonstrates:
 - **Modern React frontend** with real-time data visualization
 - **Polyglot persistence** (PostgreSQL for operational data, MongoDB for analytics)
 - **Real-time data processing** with Apache Kafka
+- **Cloud-native deployment** on Azure with Container Apps and API Management
 - **Professional testing practices** with JUnit 5 and Mockito
 - **CI/CD integration** with SonarQube Cloud quality gates
 
@@ -41,11 +42,22 @@ This project demonstrates:
 | **UI Components** | Radix UI |
 
 ### Infrastructure
-| Category | Technologies           |
-|----------|------------------------|
+| Category | Technologies |
+|----------|--------------|
 | **Containerization** | Docker, Docker Compose |
-| **CI/CD** | Jenkins                |
-| **Code Quality** | SonarQube Cloud        |
+| **CI/CD** | Jenkins |
+| **Code Quality** | SonarQube Cloud |
+
+### Azure Cloud (Production)
+| Category | Technologies |
+|----------|--------------|
+| **Compute** | Azure Container Apps |
+| **API Gateway** | Azure API Management |
+| **Frontend Hosting** | Azure Static Web Apps |
+| **Container Registry** | Azure Container Registry |
+| **Message Broker** | Azure Event Hubs (Kafka API) |
+| **Relational Database** | Azure Database for PostgreSQL |
+| **Document Database** | Azure Cosmos DB (MongoDB API) |
 
 ## Architecture
 
