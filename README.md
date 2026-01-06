@@ -1,14 +1,15 @@
 # EmergencyWatch
 
-A microservices-based **emergency vehicle fleet observability platform** built with Java 21, Spring Boot 3, Apache Kafka, PostgreSQL, and MongoDB.
+A microservices-based **emergency vehicle fleet observability platform** built with Java 21, Spring Boot 3, React 19, Apache Kafka, PostgreSQL, and MongoDB.
 
 
 ## Overview
 
-EmergencyWatch monitors fire trucks, ambulances, and police vehicles in real-time, tracking telemetry data like fuel levels, engine temperature, battery voltage, emergency status, and location. The system detects critical conditions and generates alerts for fleet operators.
+EmergencyWatch monitors fire trucks, ambulances, and police vehicles in real-time, tracking telemetry data like fuel levels, engine temperature, battery voltage, emergency status, and location. The system detects critical conditions and generates alerts for fleet operators through a modern web dashboard.
 
 This project demonstrates:
 - **Microservices architecture** with event-driven communication
+- **Modern React frontend** with real-time data visualization
 - **Polyglot persistence** (PostgreSQL for operational data, MongoDB for analytics)
 - **Real-time data processing** with Apache Kafka
 - **Professional testing practices** with JUnit 5 and Mockito
@@ -16,6 +17,7 @@ This project demonstrates:
 
 ## Tech Stack
 
+### Backend
 | Category | Technologies |
 |----------|--------------|
 | **Language** | Java 21 |
@@ -23,21 +25,40 @@ This project demonstrates:
 | **Messaging** | Apache Kafka (KRaft mode) |
 | **Databases** | PostgreSQL 17, MongoDB 7.0 |
 | **Build** | Maven |
-| **Containerization** | Docker, Docker Compose |
 | **Testing** | JUnit 5, Mockito, AssertJ |
-| **Code Quality** | SonarQube Cloud |
 | **API Documentation** | OpenAPI 3.0 / Swagger UI |
 
-## Microservices
+### Frontend
+| Category | Technologies |
+|----------|--------------|
+| **Language** | TypeScript 5.9 |
+| **Framework** | React 19 |
+| **Build Tool** | Vite 7 |
+| **Styling** | Tailwind CSS 3.4 |
+| **State Management** | React Query (TanStack Query) |
+| **HTTP Client** | Axios |
+| **Charts** | Chart.js + react-chartjs-2 |
+| **UI Components** | Radix UI |
 
-### 1. Vehicle Simulator
+### Infrastructure
+| Category | Technologies           |
+|----------|------------------------|
+| **Containerization** | Docker, Docker Compose |
+| **CI/CD** | Jenkins                |
+| **Code Quality** | SonarQube Cloud        |
+
+## Architecture
+
+### Backend Microservices
+
+#### 1. Vehicle Simulator
 Generates realistic telemetry data for a fleet of emergency vehicles.
 
 - Simulates fire trucks (24V systems), ambulances (12V), and police vehicles (12V)
 - Produces telemetry every 3 seconds per vehicle
 - Publishes to `vehicle-telemetry` Kafka topic
 
-### 2. Data Processor
+#### 2. Data Processor
 Consumes telemetry, validates data, detects alert conditions, and persists to PostgreSQL.
 
 **Alert Detection:**:
@@ -49,7 +70,7 @@ Consumes telemetry, validates data, detects alert conditions, and persists to Po
 | LOW_BATTERY | < 11V (12V systems) or < 22V (24V systems) |
 | EMERGENCY_STATUS_CHANGE | Emergency lights activated |
 
-### 3. Analytics Service
+#### 3. Analytics Service
 Provides real-time fleet analytics and historical metrics aggregation.
 
 **Features:**
@@ -58,7 +79,7 @@ Provides real-time fleet analytics and historical metrics aggregation.
 - Scheduled daily aggregation job (PostgreSQL → MongoDB)
 - REST API for querying metrics
 
-### 4. Notification Service
+#### 4. Notification Service
 Manages vehicle alerts with deduplication and lifecycle tracking.
 
 **Features:**
@@ -67,11 +88,27 @@ Manages vehicle alerts with deduplication and lifecycle tracking.
 - Filtering by vehicle type and status
 - REST API for alert management
 
+### Frontend Dashboard
+A modern React-based web application for monitoring the emergency vehicle fleet.
+
+**Features:**
+- Real-time fleet dashboard with vehicle status overview
+- Interactive alerts panel with acknowledge/resolve actions
+- Fleet analytics with charts (fuel consumption, speed trends)
+- Historical metrics visualization
+- Dark mode support
+- Responsive design
+
+**Pages:**
+- **Dashboard**: Live vehicle status, active alerts, fleet averages
+- **Analytics**: Historical metrics, vehicle fuel consumption, speed trends by type
+
 ## Getting Started
 
 ### Prerequisites
 - Java 21
 - Maven 3.8+
+- Node.js 18+ & npm
 - Docker & Docker Compose
 
 ### 1. Start Infrastructure
@@ -105,9 +142,20 @@ mvn spring-boot:run
 # Terminal 4: Notification Service
 cd services/notification-service
 mvn spring-boot:run
+
+# Terminal 5: Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
-### 3. Verify the System
+### 3. Access the Application
+
+- **Frontend Dashboard**: http://localhost:5173
+- **Analytics API**: http://localhost:8082
+- **Notifications API**: http://localhost:8083
+
+### 4. Verify the System
 
 ```bash
 # Check fleet analytics
@@ -174,37 +222,41 @@ cd services/analytics-service && mvn test
 
 ```
 EmergencyWatch/
-├── docker-compose.yml          # Infrastructure setup
+├── docker-compose.yml              # Infrastructure setup
+├── .github/workflows/              # CI/CD pipelines
+├── docs/
+│   └── api-documentation/swagger/  # OpenAPI specs & Swagger UI
+├── frontend/                       # React Frontend
+│   ├── src/
+│   │   ├── api/                    # API client services
+│   │   ├── components/
+│   │   │   ├── charts/             # Chart.js visualizations
+│   │   │   ├── dashboard/          # Dashboard components
+│   │   │   ├── layout/             # Header, Sidebar, MainLayout
+│   │   │   └── ui/                 # Base UI components
+│   │   ├── hooks/                  # React Query hooks
+│   │   ├── pages/                  # Dashboard & Analytics pages
+│   │   └── types/                  # TypeScript interfaces
+│   └── package.json
 ├── services/
-│   ├── vehicle-simulator/      # Telemetry generator
+│   ├── vehicle-simulator/          # Telemetry generator
 │   │   └── src/main/java/.../
 │   │       ├── service/
-│   │       │   ├── VehicleSimulatorService.java
-│   │       │   ├── TelemetryGenerator.java
-│   │       │   └── KafkaPublisher.java
 │   │       └── model/
-│   │
-│   ├── data-processor/         # Telemetry processing & alerts
+│   ├── data-processor/             # Telemetry processing & alerts
 │   │   └── src/main/java/.../
 │   │       ├── service/
-│   │       │   ├── TelemetryProcessingService.java
-│   │       │   └── AlertPublisher.java
 │   │       ├── consumer/
 │   │       └── model/
-│   │
-│   ├── analytics-service/      # Real-time & historical analytics
+│   ├── analytics-service/          # Real-time & historical analytics
 │   │   └── src/main/java/.../
 │   │       ├── service/
-│   │       │   ├── AnalyticsService.java
-│   │       │   └── MetricsAggregationService.java
 │   │       ├── scheduler/
 │   │       ├── controller/
 │   │       └── entity/
-│   │
-│   └── notification-service/   # Alert management
+│   └── notification-service/       # Alert management
 │       └── src/main/java/.../
 │           ├── service/
-│           │   └── AlertService.java
 │           ├── consumer/
 │           └── controller/
 ```
@@ -231,6 +283,7 @@ EmergencyWatch/
 
 | Service | Port |
 |---------|------|
+| Frontend | 5173 |
 | Data Processor | 8080 |
 | Analytics Service | 8082 |
 | Notification Service | 8083 |
