@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: vehicle-simulator
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Vehicle simulation configuration
+app:
+  vehicles:
+    count: 5
+  telemetry:
+    interval-seconds: 15
