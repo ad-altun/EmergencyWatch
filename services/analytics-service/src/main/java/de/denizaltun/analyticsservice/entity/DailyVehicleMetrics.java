@@ -28,6 +28,7 @@ public class DailyVehicleMetrics {
     private Double minSpeed;
     private Double averageFuelLevel;
     private Double minFuelLevel;
+    private Double fuelConsumed;
     private Integer totalTelemetryPoints;
 
     /**
@@ -36,7 +37,7 @@ public class DailyVehicleMetrics {
     public DailyVehicleMetrics(String vehicleId, LocalDate date,
                                String vehicleStatus, String vehicleType,
                                Double averageSpeed, Double maxSpeed, Double minSpeed,
-                               Double averageFuelLevel, Double minFuelLevel,
+                               Double averageFuelLevel, Double minFuelLevel, Double fuelConsumed,
                                Integer totalTelemetryPoints) {
         this.vehicleId = vehicleId;
         this.date = date;
@@ -47,6 +48,7 @@ public class DailyVehicleMetrics {
         this.minSpeed = minSpeed;
         this.averageFuelLevel = averageFuelLevel;
         this.minFuelLevel = minFuelLevel;
+        this.fuelConsumed = fuelConsumed;
         this.totalTelemetryPoints = totalTelemetryPoints;
     }
 }

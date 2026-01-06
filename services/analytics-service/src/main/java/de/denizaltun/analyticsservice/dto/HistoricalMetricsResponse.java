@@ -29,4 +29,6 @@ public class HistoricalMetricsResponse {
     // Daily breakdown
     private List<DailyFleetMetrics> dailyFleetMetrics;
     private List<DailyVehicleMetrics> dailyVehicleMetrics;
+
+    private List<VehicleFuelConsumption> vehicleFuelConsumption;
 }

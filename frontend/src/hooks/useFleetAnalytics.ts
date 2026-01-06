@@ -5,6 +5,6 @@ export function useFleetAnalytics() {
     return useQuery({
         queryKey: ["fleetAnalytics"],
         queryFn: analyticsApi.getFleetAnalytics,
-        refetchInterval: 5000, // Poll every 5 seconds
+        refetchInterval: 15000, // Poll every 15 seconds
     });
 }

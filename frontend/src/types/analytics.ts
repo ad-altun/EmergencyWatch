@@ -34,6 +34,12 @@ export interface DailyVehicleMetrics {
     totalTelemetryPoints: number;
 }
 
+export interface VehicleFuelConsumption {
+    vehicleId: string;
+    vehicleType: string;
+    totalConsumed: number;
+}
+
 export interface HistoricalMetricsResponse {
     fromDate: string;
     toDate: string;
@@ -43,16 +49,5 @@ export interface HistoricalMetricsResponse {
     totalDataPoints: number;
     dailyFleetMetrics: DailyFleetMetrics[];
     dailyVehicleMetrics: DailyVehicleMetrics[];
-}
-
-export interface VehicleAnalytics {
-    vehicleId: string;
-    vehicleType: VehicleType;
-    vehicleStatus: VehicleStatus;
-    averageSpeed: number;
-    totalFuelConsumed: number;
-    telemetryCount: number;
-    statusDistribution: Record<VehicleStatus, number>;
-    firstSeen: string;
-    lastSeen: string;
+    vehicleFuelConsumption: VehicleFuelConsumption[];
 }

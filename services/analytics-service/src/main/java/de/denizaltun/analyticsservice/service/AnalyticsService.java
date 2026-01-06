@@ -1,6 +1,7 @@
 package de.denizaltun.analyticsservice.service;
 
 import de.denizaltun.analyticsservice.dto.HistoricalMetricsResponse;
+import de.denizaltun.analyticsservice.dto.VehicleFuelConsumption;
 import de.denizaltun.analyticsservice.dto.VehicleStatus;
 import de.denizaltun.analyticsservice.dto.VehicleTelemetryMessage;
 import de.denizaltun.analyticsservice.dto.VehicleType;
@@ -15,12 +16,14 @@ import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Core analytics service that processes telemetry and maintains metrics.
@@ -89,6 +92,7 @@ public class AnalyticsService {
     }
 
     // get the latest telemetry record for each vehicle from postgresql
+    @Transactional(readOnly = true)
     public List<VehicleTelemetry> getLatestTelemetry() {
         return vehicleTelemetryRepository.findLatestTelemetryPerVehicle();
     }
@@ -160,13 +164,29 @@ public class AnalyticsService {
         return vehicleMetricsMap.size();
     }
 
+    @Transactional(readOnly = true)
     public HistoricalMetricsResponse getHistoricalMetrics(LocalDate from, LocalDate to) {
 
+        // 1. Fetch Pre-Calculated Data
         List<DailyFleetMetrics> fleetMetrics =
                 fleetMetricsRepository.findByDateBetweenOrderByDateAsc(from, to);
 
         List<DailyVehicleMetrics> vehicleMetrics =
                 vehicleMetricsRepository.findByDateBetweenOrderByVehicleIdAsc(from, to);
+
+        // 2. Aggregate vehicle fuel consumption from daily metrics
+        List<VehicleFuelConsumption> fuelConsumption = vehicleMetrics.stream()
+                .collect(Collectors.groupingBy(DailyVehicleMetrics::getVehicleId))
+                .entrySet().stream()
+                .map(entry -> new VehicleFuelConsumption(
+                        entry.getKey(),
+                        entry.getValue().get(0).getVehicleType(), // Get type from first entry
+                        entry.getValue().stream()
+                                .filter(m -> m.getFuelConsumed() != null)
+                                .mapToDouble(DailyVehicleMetrics::getFuelConsumed)
+                                .sum()
+                ))
+                .toList();
 
         // Calculate summary statistics
         Double avgSpeed = fleetMetrics.stream()
@@ -194,6 +214,7 @@ public class AnalyticsService {
                 .totalDataPoints(totalPoints)
                 .dailyFleetMetrics(fleetMetrics)
                 .dailyVehicleMetrics(vehicleMetrics)
+                .vehicleFuelConsumption(fuelConsumption)
                 .build();
     }
 }

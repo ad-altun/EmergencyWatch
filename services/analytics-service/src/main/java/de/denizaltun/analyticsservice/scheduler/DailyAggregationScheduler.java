@@ -31,7 +31,7 @@ public class DailyAggregationScheduler {
      * - Month: * (every month)
      * - Day of week: * (every day)
      */
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Berlin")
     public void aggregateYesterdayMetrics() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
 

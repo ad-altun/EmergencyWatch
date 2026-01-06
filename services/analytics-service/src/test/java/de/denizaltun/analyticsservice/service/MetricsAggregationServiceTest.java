@@ -75,7 +75,10 @@ class MetricsAggregationServiceTest {
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
             when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(5);
             when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(60.0);
-            when(telemetryRepository.calculateTotalFuelLevelByDate(testDate)).thenReturn(250.0);
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
                     .thenReturn(Collections.emptyList());
 
@@ -98,7 +101,10 @@ class MetricsAggregationServiceTest {
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
             when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(3);
             when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(50.0);
-            when(telemetryRepository.calculateTotalFuelLevelByDate(testDate)).thenReturn(100.0);
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
                     .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateVehicleMetricsByDate(testDate))
@@ -110,7 +116,8 @@ class MetricsAggregationServiceTest {
             // ASSERT - Verify all PostgreSQL queries were called
             verify(telemetryRepository).countDistinctVehiclesByDate(testDate);
             verify(telemetryRepository).calculateAverageSpeedByDate(testDate);
-            verify(telemetryRepository).calculateTotalFuelLevelByDate(testDate);
+            verify(telemetryRepository).calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class));
+            verify(telemetryRepository).calculateAverageSpeedByStatusAndDate(testDate);
             verify(telemetryRepository).calculateAverageSpeedByTypeAndDate(testDate);
             verify(telemetryRepository).calculateVehicleMetricsByDate(testDate);
         }
@@ -124,10 +131,19 @@ class MetricsAggregationServiceTest {
         @DisplayName("Should save fleet metrics with correct values")
         void shouldSaveFleetMetricsWithCorrectValues() {
             // ARRANGE
+            List<Object[]> fuelData = Arrays.asList(
+                    new Object[]{"FIRE_TRUCK_001", "FIRE_TRUCK", 250.5},
+                    new Object[]{"AMBULANCE_001", "AMBULANCE", 150.75},
+                    new Object[]{"POLICE_001", "POLICE", 99.0}
+            );
+
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
             when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(10);
             when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(75.5);
-            when(telemetryRepository.calculateTotalFuelLevelByDate(testDate)).thenReturn(500.25);
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(fuelData);
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
                     .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateVehicleMetricsByDate(testDate))
@@ -160,7 +176,10 @@ class MetricsAggregationServiceTest {
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
             when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(5);
             when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(70.0);
-            when(telemetryRepository.calculateTotalFuelLevelByDate(testDate)).thenReturn(200.0);
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
                     .thenReturn(speedByType);
             when(telemetryRepository.calculateVehicleMetricsByDate(testDate))
@@ -207,8 +226,13 @@ class MetricsAggregationServiceTest {
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
             when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(5);
             when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(60.0);
-            when(telemetryRepository.calculateTotalFuelLevelByDate(testDate)).thenReturn(100.0);
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
             when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateVehicleMetricsByDate(testDate))
                     .thenReturn(Collections.emptyList());
 
             // MongoDB save fails
@@ -234,18 +258,18 @@ class MetricsAggregationServiceTest {
             setupFleetMetricsMocks();
 
             List<Object[]> vehicleData = Arrays.asList(
-                    createVehicleDataRow("FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 100L),
-                    createVehicleDataRow("AMBULANCE_001", testDate, "EN_ROUTE", "AMBULANCE", 70.0, 90.0, 50.0, 80.0, 60.0, 120L)
+                    createVehicleDataRow("FIRE_TRUCK_001", "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 100L),
+                    createVehicleDataRow("AMBULANCE_001", "EN_ROUTE", "AMBULANCE", 70.0, 90.0, 50.0, 80.0, 60.0, 120L)
             );
             when(telemetryRepository.calculateVehicleMetricsByDate(testDate)).thenReturn(vehicleData);
-            when(vehicleMetricsRepository.findByVehicleIdAndDate(any(), eq(testDate)))
-                    .thenReturn(Optional.empty());
 
             // ACT
             aggregationService.aggregateMetricsForDate(testDate);
 
             // ASSERT
-            verify(vehicleMetricsRepository, times(2)).save(any(DailyVehicleMetrics.class));
+            ArgumentCaptor<List<DailyVehicleMetrics>> captor = ArgumentCaptor.forClass(List.class);
+            verify(vehicleMetricsRepository, times(1)).saveAll(captor.capture());
+            assertThat(captor.getValue()).hasSize(2);
         }
 
         @Test
@@ -253,24 +277,34 @@ class MetricsAggregationServiceTest {
         void shouldCorrectlyMapVehicleData() {
             // ARRANGE
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
-            setupFleetMetricsMocks();
 
+            // Mock fuel consumption
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(Collections.emptyList());
+
+            // Mock vehicle data
             List<Object[]> vehicleData = new ArrayList<>();
             vehicleData.add(
-                    createVehicleDataRow("FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 65.5, 85.0, 45.0, 72.3, 55.0, 150L)
+                    createVehicleDataRow("FIRE_TRUCK_001", "EN_ROUTE", "FIRE_TRUCK", 65.5, 85.0, 45.0, 72.3, 55.0, 150L)
             );
             when(telemetryRepository.calculateVehicleMetricsByDate(testDate)).thenReturn(vehicleData);
-            when(vehicleMetricsRepository.findByVehicleIdAndDate(any(), eq(testDate)))
-                    .thenReturn(Optional.empty());
+
+            // Mock fleet metrics queries (needed because aggregateMetricsForDate does both)
+            when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(1);
+            when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(60.0);
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
 
             // ACT
             aggregationService.aggregateMetricsForDate(testDate);
 
             // ASSERT
-            ArgumentCaptor<DailyVehicleMetrics> captor = ArgumentCaptor.forClass(DailyVehicleMetrics.class);
-            verify(vehicleMetricsRepository).save(captor.capture());
+            ArgumentCaptor<List<DailyVehicleMetrics>> captor = ArgumentCaptor.forClass(List.class);
+            verify(vehicleMetricsRepository).saveAll(captor.capture());
 
-            DailyVehicleMetrics saved = captor.getValue();
+            DailyVehicleMetrics saved = captor.getValue().get(0);
             assertThat(saved.getVehicleId()).isEqualTo("FIRE_TRUCK_001");
             assertThat(saved.getDate()).isEqualTo(testDate);
             assertThat(saved.getVehicleType()).isEqualTo("FIRE_TRUCK");
@@ -280,62 +314,6 @@ class MetricsAggregationServiceTest {
             assertThat(saved.getAverageFuelLevel()).isEqualTo(72.3);
             assertThat(saved.getMinFuelLevel()).isEqualTo(55.0);
             assertThat(saved.getTotalTelemetryPoints()).isEqualTo(150);
-        }
-
-        @Test
-        @DisplayName("Should skip vehicle metrics if already exists (idempotence)")
-        void shouldSkipIfVehicleMetricsAlreadyExist() {
-            // ARRANGE
-            when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
-            setupFleetMetricsMocks();
-
-            List<Object[]> vehicleData = new ArrayList<>();
-            vehicleData.add(
-                    createVehicleDataRow("FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 100L)
-            );
-            when(telemetryRepository.calculateVehicleMetricsByDate(testDate)).thenReturn(vehicleData);
-
-            // Existing metrics found
-            DailyVehicleMetrics existing = new DailyVehicleMetrics(
-                    "FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 100
-            );
-            when(vehicleMetricsRepository.findByVehicleIdAndDate("FIRE_TRUCK_001", testDate))
-                    .thenReturn(Optional.of(existing));
-
-            // ACT
-            aggregationService.aggregateMetricsForDate(testDate);
-
-            // ASSERT - Should NOT save again
-            verify(vehicleMetricsRepository, never()).save(any(DailyVehicleMetrics.class));
-        }
-
-        @Test
-        @DisplayName("Should continue processing other vehicles if one save fails")
-        void shouldContinueProcessingOnIndividualFailure() {
-            // ARRANGE
-            when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
-            setupFleetMetricsMocks();
-
-            List<Object[]> vehicleData = Arrays.asList(
-                    createVehicleDataRow("FIRE_TRUCK_001", testDate, "EN_ROUTE", "FIRE_TRUCK", 60.0, 80.0, 40.0, 75.0, 50.0, 100L),
-                    createVehicleDataRow("AMBULANCE_001", testDate, "EN_ROUTE", "AMBULANCE", 70.0, 90.0, 50.0, 80.0, 60.0, 120L),
-                    createVehicleDataRow("POLICE_001", testDate, "EN_ROUTE", "POLICE", 80.0, 100.0, 60.0, 85.0, 70.0, 130L)
-            );
-            when(telemetryRepository.calculateVehicleMetricsByDate(testDate)).thenReturn(vehicleData);
-            when(vehicleMetricsRepository.findByVehicleIdAndDate(any(), eq(testDate)))
-                    .thenReturn(Optional.empty());
-
-            // First save succeeds, second fails, third succeeds
-            when(vehicleMetricsRepository.save(any(DailyVehicleMetrics.class)))
-                    .thenReturn(null) // First save OK
-                    .thenThrow(new RuntimeException("MongoDB error")) // Second save fails
-                    .thenReturn(null); // Third save OK
-
-            // ACT - Should NOT throw exception
-            aggregationService.aggregateMetricsForDate(testDate);
-
-            // ASSERT - All 3 save attempts were made
-            verify(vehicleMetricsRepository, times(3)).save(any(DailyVehicleMetrics.class));
         }
 
         @Test
@@ -350,8 +328,45 @@ class MetricsAggregationServiceTest {
             // ACT
             aggregationService.aggregateMetricsForDate(testDate);
 
-            // ASSERT - No vehicle metrics saved, but no exception
-            verify(vehicleMetricsRepository, never()).save(any(DailyVehicleMetrics.class));
+            // ASSERT - saveAll called with empty list
+            verify(vehicleMetricsRepository, times(1)).saveAll(Collections.emptyList());
+        }
+
+        @Test
+        @DisplayName("Should include fuel consumption in vehicle metrics")
+        void shouldIncludeFuelConsumptionInVehicleMetrics() {
+            // ARRANGE
+            when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
+
+            // Mock fuel consumption data
+            List<Object[]> fuelData = List.<Object[]>of(
+                    new Object[]{"FIRE_TRUCK_001", "FIRE_TRUCK", 50.5}
+            );
+            when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                    .thenReturn(fuelData);
+
+            when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(1);
+            when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(60.0);
+            when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
+            when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
+                    .thenReturn(Collections.emptyList());
+
+            List<Object[]> vehicleData = new ArrayList<>();
+            vehicleData.add(
+                    createVehicleDataRow("FIRE_TRUCK_001", "EN_ROUTE", "FIRE_TRUCK", 65.5, 85.0, 45.0, 72.3, 55.0, 150L)
+            );
+            when(telemetryRepository.calculateVehicleMetricsByDate(testDate)).thenReturn(vehicleData);
+
+            // ACT
+            aggregationService.aggregateMetricsForDate(testDate);
+
+            // ASSERT
+            ArgumentCaptor<List<DailyVehicleMetrics>> captor = ArgumentCaptor.forClass(List.class);
+            verify(vehicleMetricsRepository).saveAll(captor.capture());
+
+            DailyVehicleMetrics saved = captor.getValue().get(0);
+            assertThat(saved.getFuelConsumed()).isEqualTo(50.5);
         }
     }
 
@@ -359,15 +374,18 @@ class MetricsAggregationServiceTest {
     private void setupFleetMetricsMocks() {
         when(telemetryRepository.countDistinctVehiclesByDate(testDate)).thenReturn(5);
         when(telemetryRepository.calculateAverageSpeedByDate(testDate)).thenReturn(60.0);
-        when(telemetryRepository.calculateTotalFuelLevelByDate(testDate)).thenReturn(100.0);
+        when(telemetryRepository.calculateFuelConsumptionByVehicle(eq(testDate), eq(testDate), any(LocalDate.class)))
+                .thenReturn(Collections.emptyList());
+        when(telemetryRepository.calculateAverageSpeedByStatusAndDate(testDate))
+                .thenReturn(Collections.emptyList());
         when(telemetryRepository.calculateAverageSpeedByTypeAndDate(testDate))
                 .thenReturn(Collections.emptyList());
     }
 
     private Object[] createVehicleDataRow(
-            String vehicleId,  LocalDate date, String vehicleStatus, String vehicleType,
+            String vehicleId, String vehicleStatus, String vehicleType,
             Double avgSpeed, Double maxSpeed, Double minSpeed,
-            Double avgFuel, Double minFuel, Long totalPoints ) {
+            Double avgFuel, Double minFuel, Long totalPoints) {
         return new Object[]{
                 vehicleId,      // 0
                 vehicleStatus,  // 1

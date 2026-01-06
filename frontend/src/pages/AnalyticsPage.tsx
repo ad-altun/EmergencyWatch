@@ -56,7 +56,7 @@ export function AnalyticsPage() {
         <div className="flex flex-col h-full gap-6">
             {/* Header */ }
             <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-white">Fleet Analytics</h1>
+                <h1 className="text-xl font-bold text-white">EmergencyWatch Analytics</h1>
                 <p className="text-slate-400 text-sm">
                     Historical trends from { data.fromDate } to { data.toDate } ({ data.totalDays } days)
                 </p>
@@ -67,7 +67,7 @@ export function AnalyticsPage() {
                 <div className="bg-slate-800 rounded-lg p-4">
                     <p className="text-slate-400 text-sm">Average Fleet Speed</p>
                     <p className="text-2xl font-bold text-white">
-                        { data.averageFleetSpeed.toFixed(1) } km/h
+                        { data.averageFleetSpeed.toFixed(0) } km/h
                     </p>
                 </div>
                 <div className="bg-slate-800 rounded-lg p-4">
@@ -83,35 +83,56 @@ export function AnalyticsPage() {
             </div>
 
             {/* Charts */ }
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
-                {/* Speed Trend */ }
-                <div className="bg-slate-800 rounded-lg p-4">
-                    <h2 className="text-lg font-semibold text-white mb-4">Speed Trend</h2>
-                    { data.dailyFleetMetrics.length > 0 ? (
-                        <SpeedTrendChart data={ data.dailyFleetMetrics }/>
-                    ) : (
-                        <NoChartDataState message="No speed trend data available for this period"/>
-                    ) }
-                </div>
+            <div className="-mb-12">
+                <h2 className="text-lg font-semibold text-white mt-6 mb-3">Fleet-Level Metrics</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
+                    {/* Speed Trend */ }
+                    <div className="bg-slate-800 rounded-lg p-4">
+                        <h2 className="text-lg font-semibold text-white mb-4">Fleet Average Speed Trend</h2>
+                        { data.dailyFleetMetrics.length > 0 ? (
+                            <SpeedTrendChart data={ data.dailyFleetMetrics }/>
+                        ) : (
+                            <NoChartDataState message="No speed trend data available for this period"/>
+                        ) }
+                    </div>
 
-                {/* Speed by Vehicle Type */ }
-                <div className="bg-slate-800 rounded-lg p-4">
-                    <h2 className="text-lg font-semibold text-white mb-4">Speed by Vehicle Type</h2>
-                    { latestMetrics?.averageSpeedByType && Object.keys(latestMetrics.averageSpeedByType).length > 0 ? (
-                        <SpeedByTypeChart data={ latestMetrics.averageSpeedByType }/>
-                    ) : (
-                        <NoChartDataState message="No vehicle type data available"/>
-                    ) }
+                    {/* Average Speed by Vehicle Type */ }
+                    <div className="bg-slate-800 rounded-lg p-4">
+                        <h2 className="text-lg font-semibold text-white mb-4">Average Speed by Vehicle Type</h2>
+                        { latestMetrics?.averageSpeedByType && Object.keys(
+                            latestMetrics.averageSpeedByType).length > 0 ? (
+                            <SpeedByTypeChart data={ latestMetrics.averageSpeedByType }/>
+                        ) : (
+                            <NoChartDataState message="No vehicle type data available"/>
+                        ) }
+                    </div>
                 </div>
 
                 {/* Fuel by Vehicle */ }
-                <div className="bg-slate-800 rounded-lg p-4 lg:col-span-2">
-                    <h2 className="text-lg font-semibold text-white mb-4">Average Fuel Level by Vehicle</h2>
-                    { data.dailyVehicleMetrics.length > 0 ? (
-                        <FuelByVehicleChart data={ data.dailyVehicleMetrics }/>
-                    ) : (
-                        <NoChartDataState message="No vehicle fuel data available for this period"/>
-                    ) }
+                <div>
+                    <h2 className="text-lg font-semibold text-white mt-6 my-3">Vehicle-Level Metrics</h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
+                        <div className="bg-slate-800 rounded-lg p-4">
+                            <h2 className="text-lg font-semibold text-white mb-4">
+                                Fuel Consumption by Vehicle ({ data.fromDate } to { data.toDate })
+                            </h2>
+                            { data.vehicleFuelConsumption && data.vehicleFuelConsumption.length > 0 ? (
+                                <FuelByVehicleChart data={ data.vehicleFuelConsumption }/>
+                            ) : (
+                                <NoChartDataState message="No fuel consumption data available"/>
+                            ) }
+                        </div>
+                        <div className="bg-slate-800 rounded-lg p-4">
+                            <h2 className="text-lg font-semibold text-white mb-4">
+                                Fuel Consumption by Vehicle ({ data.fromDate } to { data.toDate })
+                            </h2>
+                            { data.vehicleFuelConsumption && data.vehicleFuelConsumption.length > 0 ? (
+                                <FuelByVehicleChart data={ data.vehicleFuelConsumption }/>
+                            ) : (
+                                <NoChartDataState message="No fuel consumption data available"/>
+                            ) }
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
