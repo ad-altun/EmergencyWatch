@@ -1,23 +1,23 @@
 name: emergencywatch-data-processor
 type: Microsoft.Web/containerApps
-location: westeurope
+location: ${LOCATION}
 
 properties:
-  managedEnvironmentId: /subscriptions/<SUB_ID>/resourceGroups/<RG>/providers/Microsoft.Web/managedEnvironments/<ENV_NAME>
+  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Web/managedEnvironments/${ENVIRONMENT_NAME}
 
   configuration:
     registries:
-      - server: <ACR_NAME>.azurecr.io
+      - server: ${ACR_NAME}.azurecr.io
         identity: system
 
   template:
     containers:
       - name: data-processor
-        image: <ACR_NAME>.azurecr.io/emergencywatch/data-processor:latest
+        image: ${ACR_NAME}.azurecr.io/emergencywatch/data-processor:latest
 
         resources:
-          cpu: 0.5
-          memory: 1Gi
+          cpu: 0.25
+          memory: 0.5Gi
 
         env:
           - name: SPRING_PROFILES_ACTIVE
@@ -40,7 +40,7 @@ properties:
 
     scale:
       minReplicas: 1
-      maxReplicas: 3
+      maxReplicas: 1
       rules:
         - name: kafka-scale
           custom:
