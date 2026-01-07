@@ -4,7 +4,7 @@ spring:
 
   # PostgreSQL Database Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5433/emergencywatch
+    url: jdbc:postgresql://localhost:55432/emergencywatch
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver

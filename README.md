@@ -131,7 +131,7 @@ docker-compose up -d
 
 This starts:
 - Kafka (port 9092)
-- PostgreSQL (port 5433)
+- PostgreSQL (port 55432)
 - MongoDB (port 27017)
 
 ### 2. Run the Services
@@ -299,7 +299,7 @@ EmergencyWatch/
 | Data Processor | 8080 |
 | Analytics Service | 8082 |
 | Notification Service | 8083 |
-| PostgreSQL | 5433 |
+| PostgreSQL | 55432 |
 | Kafka | 9092 |
 | MongoDB | 27017 |
 
