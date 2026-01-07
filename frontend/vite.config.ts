@@ -13,13 +13,17 @@ export default defineConfig({
     server: {
         port: 5173,
         proxy: {
-            "/api/analytics": {
+            // Analytics Service - Clean APIM path structure
+            "/analytics": {
                 target: "http://localhost:8082",
                 changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/analytics/, "/api/analytics"),
             },
-            "/api/alerts": {
+            // Notification Service - Clean APIM path structure
+            "/notifications": {
                 target: "http://localhost:8083",
                 changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/notifications/, "/api/alerts"),
             },
         },
     },
