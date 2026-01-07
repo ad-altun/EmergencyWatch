@@ -33,6 +33,12 @@
 /frontend/dist-ssr
 /frontend/*.local
 
+# Environment variables - keep only .env.example
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.production.local
+
 # frontend
 # Logs
 /frontend/logs
