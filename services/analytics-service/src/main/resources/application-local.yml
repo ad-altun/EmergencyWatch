@@ -13,7 +13,7 @@ spring:
       uri: mongodb://admin:password@localhost:27017/emergencywatch_analytics?authSource=admin
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/emergencywatch
+    url: jdbc:postgresql://localhost:55432/emergencywatch
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
