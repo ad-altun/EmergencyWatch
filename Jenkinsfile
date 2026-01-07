@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'FORCE_ALL', defaultValue: false, description: 'Force build and deploy ALL components (backend + frontend)')
+        booleanParam(name: 'FORCE_BACKEND', defaultValue: false, description: 'Force build and deploy backend services only')
+        booleanParam(name: 'FORCE_FRONTEND', defaultValue: false, description: 'Force build and deploy frontend only')
+    }
+
     tools {
         maven 'Maven'
         jdk 'JDK21'
@@ -42,18 +48,37 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    // Detect what changed
-                    env.BACKEND_CHANGED = sh(
-                        script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/' && echo 'true' || echo 'false'",
-                        returnStdout: true
-                    ).trim()
-                    env.FRONTEND_CHANGED = sh(
-                        script: "git diff --name-only HEAD~1 HEAD | grep -q '^frontend/' && echo 'true' || echo 'false'",
-                        returnStdout: true
-                    ).trim()
+                    // Check if force parameters are set
+                    def forceAll = params.FORCE_ALL ?: false
+                    def forceBackend = params.FORCE_BACKEND ?: false
+                    def forceFrontend = params.FORCE_FRONTEND ?: false
 
-                    echo "Backend changed: ${env.BACKEND_CHANGED}"
-                    echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+                    // Detect what changed (or use force flags)
+                    if (forceAll || forceBackend) {
+                        env.BACKEND_CHANGED = 'true'
+                    } else {
+                        env.BACKEND_CHANGED = sh(
+                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/' && echo 'true' || echo 'false'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    if (forceAll || forceFrontend) {
+                        env.FRONTEND_CHANGED = 'true'
+                    } else {
+                        env.FRONTEND_CHANGED = sh(
+                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^frontend/' && echo 'true' || echo 'false'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    echo "========================================"
+                    echo "Force All: ${forceAll}"
+                    echo "Force Backend: ${forceBackend}"
+                    echo "Force Frontend: ${forceFrontend}"
+                    echo "Backend will build: ${env.BACKEND_CHANGED}"
+                    echo "Frontend will build: ${env.FRONTEND_CHANGED}"
+                    echo "========================================"
                 }
             }
         }
