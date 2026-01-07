@@ -34,6 +34,9 @@ pipeline {
         // Build Info
         BUILD_VERSION        = "${env.BUILD_NUMBER}"
         GIT_COMMIT_SHORT     = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+
+        // Memory optimization for low-RAM servers
+        MAVEN_OPTS           = '-Xmx512m -XX:+UseG1GC'
     }
 
     options {
@@ -84,63 +87,68 @@ pipeline {
         }
 
         // ============================================
-        // BACKEND CI - Build & Test
+        // BACKEND CI - Build & Test (Sequential to save RAM)
         // ============================================
-        stage('Backend: Build & Test') {
+        stage('Backend: Build vehicle-simulator') {
             when {
                 expression { env.BACKEND_CHANGED == 'true' }
             }
-            parallel {
-                stage('vehicle-simulator') {
-                    steps {
-                        dir('services/vehicle-simulator') {
-                            sh 'mvn clean verify -DskipTests=false'
-                        }
-                    }
-                    post {
-                        always {
-                            junit allowEmptyResults: true, testResults: 'services/vehicle-simulator/target/surefire-reports/*.xml'
-                        }
-                    }
+            steps {
+                dir('services/vehicle-simulator') {
+                    sh 'mvn clean verify -DskipTests=false'
                 }
-
-                stage('data-processor') {
-                    steps {
-                        dir('services/data-processor') {
-                            sh 'mvn clean verify -DskipTests=false'
-                        }
-                    }
-                    post {
-                        always {
-                            junit allowEmptyResults: true, testResults: 'services/data-processor/target/surefire-reports/*.xml'
-                        }
-                    }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'services/vehicle-simulator/target/surefire-reports/*.xml'
                 }
+            }
+        }
 
-                stage('analytics-service') {
-                    steps {
-                        dir('services/analytics-service') {
-                            sh 'mvn clean verify -DskipTests=false'
-                        }
-                    }
-                    post {
-                        always {
-                            junit allowEmptyResults: true, testResults: 'services/analytics-service/target/surefire-reports/*.xml'
-                        }
-                    }
+        stage('Backend: Build data-processor') {
+            when {
+                expression { env.BACKEND_CHANGED == 'true' }
+            }
+            steps {
+                dir('services/data-processor') {
+                    sh 'mvn clean verify -DskipTests=false'
                 }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'services/data-processor/target/surefire-reports/*.xml'
+                }
+            }
+        }
 
-                stage('notification-service') {
-                    steps {
-                        dir('services/notification-service') {
-                            sh 'mvn clean verify -DskipTests=false'
-                        }
-                    }
-                    post {
-                        always {
-                            junit allowEmptyResults: true, testResults: 'services/notification-service/target/surefire-reports/*.xml'
-                        }
-                    }
+        stage('Backend: Build analytics-service') {
+            when {
+                expression { env.BACKEND_CHANGED == 'true' }
+            }
+            steps {
+                dir('services/analytics-service') {
+                    sh 'mvn clean verify -DskipTests=false'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'services/analytics-service/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Backend: Build notification-service') {
+            when {
+                expression { env.BACKEND_CHANGED == 'true' }
+            }
+            steps {
+                dir('services/notification-service') {
+                    sh 'mvn clean verify -DskipTests=false'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'services/notification-service/target/surefire-reports/*.xml'
                 }
             }
         }
@@ -182,57 +190,39 @@ pipeline {
             when {
                 expression { env.BACKEND_CHANGED == 'true' }
             }
-            parallel {
-                stage('Docker: vehicle-simulator') {
-                    steps {
-                        dir('services/vehicle-simulator') {
-                            sh '''
-                                docker build -t $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT \
-                                             -t $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:latest .
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:latest
-                            '''
-                        }
-                    }
+            steps {
+                // Sequential Docker builds to save RAM
+                dir('services/vehicle-simulator') {
+                    sh '''
+                        docker build -t $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT \
+                                     -t $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:latest .
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:latest
+                    '''
                 }
-
-                stage('Docker: data-processor') {
-                    steps {
-                        dir('services/data-processor') {
-                            sh '''
-                                docker build -t $ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT \
-                                             -t $ACR_LOGIN_SERVER/emergencywatch/data-processor:latest .
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/data-processor:latest
-                            '''
-                        }
-                    }
+                dir('services/data-processor') {
+                    sh '''
+                        docker build -t $ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT \
+                                     -t $ACR_LOGIN_SERVER/emergencywatch/data-processor:latest .
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/data-processor:latest
+                    '''
                 }
-
-                stage('Docker: analytics-service') {
-                    steps {
-                        dir('services/analytics-service') {
-                            sh '''
-                                docker build -t $ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT \
-                                             -t $ACR_LOGIN_SERVER/emergencywatch/analytics-service:latest .
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/analytics-service:latest
-                            '''
-                        }
-                    }
+                dir('services/analytics-service') {
+                    sh '''
+                        docker build -t $ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT \
+                                     -t $ACR_LOGIN_SERVER/emergencywatch/analytics-service:latest .
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/analytics-service:latest
+                    '''
                 }
-
-                stage('Docker: notification-service') {
-                    steps {
-                        dir('services/notification-service') {
-                            sh '''
-                                docker build -t $ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT \
-                                             -t $ACR_LOGIN_SERVER/emergencywatch/notification-service:latest .
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT
-                                docker push $ACR_LOGIN_SERVER/emergencywatch/notification-service:latest
-                            '''
-                        }
-                    }
+                dir('services/notification-service') {
+                    sh '''
+                        docker build -t $ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT \
+                                     -t $ACR_LOGIN_SERVER/emergencywatch/notification-service:latest .
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT
+                        docker push $ACR_LOGIN_SERVER/emergencywatch/notification-service:latest
+                    '''
                 }
             }
         }
