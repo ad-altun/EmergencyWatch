@@ -233,29 +233,40 @@ pipeline {
             }
             steps {
                 sh '''
-                    # Deploy vehicle-simulator
-                    az containerapp update \
-                        --name vehicle-simulator \
-                        --resource-group $RESOURCE_GROUP \
-                        --image $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT
+                    # Function to deploy a container app (create if not exists, update if exists)
+                    deploy_containerapp() {
+                        local APP_NAME=$1
+                        local IMAGE=$2
 
-                    # Deploy data-processor
-                    az containerapp update \
-                        --name data-processor \
-                        --resource-group $RESOURCE_GROUP \
-                        --image $ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT
+                        echo "Deploying $APP_NAME..."
 
-                    # Deploy analytics-service
-                    az containerapp update \
-                        --name analytics-service \
-                        --resource-group $RESOURCE_GROUP \
-                        --image $ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT
+                        if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
+                            echo "$APP_NAME exists, updating..."
+                            az containerapp update \
+                                --name $APP_NAME \
+                                --resource-group $RESOURCE_GROUP \
+                                --image $IMAGE
+                        else
+                            echo "$APP_NAME does not exist, creating..."
+                            az containerapp create \
+                                --name $APP_NAME \
+                                --resource-group $RESOURCE_GROUP \
+                                --environment $CONTAINER_ENV \
+                                --image $IMAGE \
+                                --registry-server $ACR_LOGIN_SERVER \
+                                --registry-identity system \
+                                --cpu 0.5 \
+                                --memory 1.0Gi \
+                                --min-replicas 0 \
+                                --max-replicas 1
+                        fi
+                    }
 
-                    # Deploy notification-service
-                    az containerapp update \
-                        --name notification-service \
-                        --resource-group $RESOURCE_GROUP \
-                        --image $ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT
+                    # Deploy all services
+                    deploy_containerapp "vehicle-simulator" "$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
+                    deploy_containerapp "data-processor" "$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
+                    deploy_containerapp "analytics-service" "$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
+                    deploy_containerapp "notification-service" "$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
                 '''
             }
         }
