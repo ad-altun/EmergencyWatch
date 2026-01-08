@@ -1,4 +1,4 @@
-name: emergencywatch-analytics-service
+name: analytics-service
 type: Microsoft.Web/containerApps
 location: ${LOCATION}
 

@@ -1,4 +1,4 @@
-name: emergencywatch-data-processor
+name: data-processor
 type: Microsoft.Web/containerApps
 location: ${LOCATION}
 
