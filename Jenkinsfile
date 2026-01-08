@@ -319,25 +319,22 @@ pipeline {
                         --account-name $STORAGE_ACCOUNT \
                         --auth-mode login
 
-                    # Upload new files with proper cache headers
-                    # Long cache for hashed assets (JS, CSS)
+                    # Upload all files with short cache (for HTML and root files)
+                    az storage blob upload-batch \
+                        --source frontend/dist \
+                        --destination '$web' \
+                        --account-name $STORAGE_ACCOUNT \
+                        --auth-mode login \
+                        --content-cache-control "public, max-age=3600"
+
+                    # Overwrite assets/ with long cache (hashed JS, CSS files)
                     az storage blob upload-batch \
                         --source frontend/dist \
                         --destination '$web' \
                         --account-name $STORAGE_ACCOUNT \
                         --auth-mode login \
                         --content-cache-control "public, max-age=31536000, immutable" \
-                        --include-path "assets/*"
-
-                    # Short cache for HTML and other files
-                    az storage blob upload-batch \
-                        --source frontend/dist \
-                        --destination '$web' \
-                        --account-name $STORAGE_ACCOUNT \
-                        --auth-mode login \
-                        --content-cache-control "public, max-age=3600" \
-                        --include-path "index.html" "*" \
-                        --exclude-path "assets/*"
+                        --pattern "assets/*"
                 '''
             }
         }
