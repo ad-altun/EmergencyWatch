@@ -316,7 +316,7 @@ pipeline {
                         --account-name $STORAGE_ACCOUNT \
                         --auth-mode login \
                         --content-cache-control "public, max-age=31536000, immutable" \
-                        --pattern "assets/*"
+                        --include-path "assets/*"
 
                     # Short cache for HTML and other files
                     az storage blob upload-batch \
@@ -325,8 +325,8 @@ pipeline {
                         --account-name $STORAGE_ACCOUNT \
                         --auth-mode login \
                         --content-cache-control "public, max-age=3600" \
-                        --pattern "*" \
-                        --exclude-pattern "assets/*"
+                        --include-path "index.html" "*" \
+                        --exclude-path "assets/*"
                 '''
             }
         }
