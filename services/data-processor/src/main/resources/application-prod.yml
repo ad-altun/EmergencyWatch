@@ -30,6 +30,9 @@ spring:
       properties:
         spring.json.trusted.packages: "*"  # Trust all packages for JSON deserialization
 
+server:
+  port: 8080
+
 management:
   endpoints:
     web:
