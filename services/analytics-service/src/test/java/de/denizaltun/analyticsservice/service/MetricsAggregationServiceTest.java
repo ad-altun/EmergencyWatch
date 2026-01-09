@@ -2,9 +2,10 @@ package de.denizaltun.analyticsservice.service;
 
 import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
 import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
-import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
-import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
-import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
+import de.denizaltun.analyticsservice.repository.mongo.DailyFleetMetricsRepository;
+import de.denizaltun.analyticsservice.repository.mongo.DailyVehicleMetricsRepository;
+import de.denizaltun.analyticsservice.repository.jpa.VehicleTelemetryRepository;
+import de.denizaltun.analyticsservice.repository.mongo.DailyVehicleMetricsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

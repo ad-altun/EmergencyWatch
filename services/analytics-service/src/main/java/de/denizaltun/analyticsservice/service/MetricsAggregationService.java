@@ -2,9 +2,9 @@ package de.denizaltun.analyticsservice.service;
 
 import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
 import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
-import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
-import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
-import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
+import de.denizaltun.analyticsservice.repository.mongo.DailyFleetMetricsRepository;
+import de.denizaltun.analyticsservice.repository.mongo.DailyVehicleMetricsRepository;
+import de.denizaltun.analyticsservice.repository.jpa.VehicleTelemetryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
