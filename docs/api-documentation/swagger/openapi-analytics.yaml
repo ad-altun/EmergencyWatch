@@ -7,7 +7,7 @@ info:
     This service provides:
     - Fleet-wide metrics (average speed, fuel consumption, vehicle counts)
     - Per-vehicle analytics with status distribution
-    - Historical metrics from MongoDB aggregations
+    - Historical metrics from DB aggregations
   version: 1.0.0
   contact:
     name: Deniz Altun
@@ -23,7 +23,7 @@ tags:
   - name: Vehicle Analytics
     description: Individual vehicle metrics
   - name: Historical Data
-    description: Aggregated historical metrics from MongoDB
+    description: Aggregated historical metrics from DB
   - name: Admin
     description: Administrative operations
 
@@ -146,7 +146,7 @@ paths:
   /api/analytics/history:
     get:
       summary: Get historical metrics
-      description: Retrieve aggregated metrics from MongoDB for a date range
+      description: Retrieve aggregated metrics from DB for a date range
       tags:
         - Historical Data
       parameters:

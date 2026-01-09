@@ -12,10 +12,6 @@ spring:
       group-id: analytics-service-group
       auto-offset-reset: earliest
 
-  data:
-    mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI}
-
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -24,7 +20,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none  # only reading, analytics service should not change the schema
+      ddl-auto: update  # Create analytics tables on first startup
     show-sql: false
     properties:
       hibernate:
