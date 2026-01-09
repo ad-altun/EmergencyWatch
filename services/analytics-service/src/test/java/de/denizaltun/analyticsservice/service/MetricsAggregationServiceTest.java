@@ -2,10 +2,9 @@ package de.denizaltun.analyticsservice.service;
 
 import de.denizaltun.analyticsservice.entity.DailyFleetMetrics;
 import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
-import de.denizaltun.analyticsservice.repository.mongo.DailyFleetMetricsRepository;
-import de.denizaltun.analyticsservice.repository.mongo.DailyVehicleMetricsRepository;
-import de.denizaltun.analyticsservice.repository.jpa.VehicleTelemetryRepository;
-import de.denizaltun.analyticsservice.repository.mongo.DailyVehicleMetricsRepository;
+import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
+import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
+import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,7 +39,7 @@ import static org.mockito.Mockito.when;
  * Tests the daily aggregation job that:
  * - Reads data from PostgreSQL (VehicleTelemetry)
  * - Aggregates metrics
- * - Saves to MongoDB (DailyFleetMetrics, DailyVehicleMetrics)
+ * - Saves to (DailyFleetMetrics, DailyVehicleMetrics)
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MetricsAggregationService Unit Tests")
@@ -221,7 +220,7 @@ class MetricsAggregationServiceTest {
         }
 
         @Test
-        @DisplayName("Should propagate exception when MongoDB save fails")
+        @DisplayName("Should propagate exception when DB save fails")
         void shouldPropagateExceptionOnSaveFailure() {
             // ARRANGE
             when(fleetMetricsRepository.findByDate(testDate)).thenReturn(Optional.empty());
@@ -236,14 +235,14 @@ class MetricsAggregationServiceTest {
             when(telemetryRepository.calculateVehicleMetricsByDate(testDate))
                     .thenReturn(Collections.emptyList());
 
-            // MongoDB save fails
+            // DB save fails
             when(fleetMetricsRepository.save(any(DailyFleetMetrics.class)))
-                    .thenThrow(new RuntimeException("MongoDB connection failed"));
+                    .thenThrow(new RuntimeException("DB connection failed"));
 
             // ACT & ASSERT
             assertThatThrownBy(() -> aggregationService.aggregateMetricsForDate(testDate))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("MongoDB connection failed");
+                    .hasMessageContaining("DB connection failed");
         }
     }
 

@@ -8,10 +8,6 @@ spring:
       group-id: analytics-service-group
       auto-offset-reset: earliest
 
-  data:
-    mongodb:
-      uri: mongodb://admin:password@localhost:27017/emergencywatch_analytics?authSource=admin
-
   datasource:
     url: jdbc:postgresql://localhost:55432/emergencywatch
     username: postgres
@@ -20,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none  # only reading, analytics service should not change the schema
+      ddl-auto: update  # Create analytics tables (daily_fleet_metrics, daily_vehicle_metrics)
     show-sql: false
     properties:
       hibernate:

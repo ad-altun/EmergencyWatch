@@ -134,7 +134,7 @@ public class AnalyticsController {
         return ResponseEntity.ok("Aggregation triggered for " + date);
     }
 
-    @Operation(summary = "Get historical metrics", description = "Retrieve aggregated metrics from MongoDB for a date range")
+    @Operation(summary = "Get historical metrics", description = "Retrieve aggregated metrics from DB for a date range")
     @GetMapping("/history")
     public ResponseEntity<HistoricalMetricsResponse> getHistoricalMetrics(
             @Parameter(description = "Start date", example = "2025-12-01")

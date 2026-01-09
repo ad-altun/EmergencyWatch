@@ -21,7 +21,7 @@ public class DailyAggregationScheduler {
 
     /**
      * Runs daily at midnight (00:00:00).
-     * Aggregates yesterday's telemetry data into MongoDB.
+     * Aggregates yesterday's telemetry data
      * <p>
      * Cron expression: "0 0 0 * * *"
      * - Second: 0

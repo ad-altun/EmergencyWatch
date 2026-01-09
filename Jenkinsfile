@@ -37,10 +37,6 @@ pipeline {
 
         // Memory optimization for low-RAM servers
         MAVEN_OPTS           = '-Xmx512m -XX:+UseG1GC'
-
-        // Skip integration tests in CI (embedded MongoDB requires libcrypto.so.1.1)
-        // Unit tests still run, integration tests should run locally
-        SKIP_INTEGRATION_TESTS = 'true'
     }
 
     options {
@@ -131,8 +127,12 @@ pipeline {
             }
             steps {
                 dir('services/analytics-service') {
-                    // Skip tests - embedded MongoDB requires libcrypto.so.1.1 not available in Debian 13
-                    sh 'mvn clean verify -DskipTests=true'
+                    sh 'mvn clean verify -DskipTests=false'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'services/analytics-service/target/surefire-reports/*.xml'
                 }
             }
         }
