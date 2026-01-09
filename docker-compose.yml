@@ -54,26 +54,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # MongoDB for metrics storage
-  mongodb:
-    image: mongo:7.0
-    container_name: emergencywatch-mongodb
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: emergencywatch_analytics
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - emergencywatch-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # ============================================
   # MICROSERVICES
   # ============================================
@@ -128,13 +108,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emergencywatch
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongodb:27017/emergencywatch_analytics?authSource=admin
     depends_on:
       kafka:
         condition: service_healthy
       postgres:
-        condition: service_healthy
-      mongodb:
         condition: service_healthy
     networks:
       - emergencywatch-network
@@ -169,4 +146,3 @@ networks:
 volumes:
   kafka_data:
   postgres_data:
-  mongodb_data:
