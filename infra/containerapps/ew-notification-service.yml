@@ -35,15 +35,19 @@ properties:
             httpGet:
               path: /actuator/health/readiness
               port: 8083
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
           - type: Liveness
             httpGet:
               path: /actuator/health/liveness
               port: 8083
-            initialDelaySeconds: 30
-            periodSeconds: 30
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
     scale:
       minReplicas: 1

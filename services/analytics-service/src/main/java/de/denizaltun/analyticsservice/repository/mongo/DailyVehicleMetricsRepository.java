@@ -1,4 +1,4 @@
-package de.denizaltun.analyticsservice.repository;
+package de.denizaltun.analyticsservice.repository.mongo;
 
 import de.denizaltun.analyticsservice.entity.DailyVehicleMetrics;
 import org.springframework.data.mongodb.repository.MongoRepository;
