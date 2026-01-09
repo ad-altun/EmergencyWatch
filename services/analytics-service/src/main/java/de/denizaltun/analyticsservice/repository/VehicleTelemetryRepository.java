@@ -1,4 +1,4 @@
-package de.denizaltun.analyticsservice.repository.jpa;
+package de.denizaltun.analyticsservice.repository;
 
 import de.denizaltun.analyticsservice.entity.VehicleTelemetry;
 import org.springframework.data.jpa.repository.JpaRepository;

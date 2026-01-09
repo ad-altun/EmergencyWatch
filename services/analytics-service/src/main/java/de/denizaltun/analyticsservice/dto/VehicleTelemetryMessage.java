@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class VehicleTelemetryMessage {
     private String vehicleId;
     private VehicleType vehicleType;
