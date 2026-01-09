@@ -1,9 +1,6 @@
 package de.denizaltun.analyticsservice.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.denizaltun.analyticsservice.dto.VehicleTelemetryMessage;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -28,20 +25,18 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        return mapper;
-    }
-
-    @Bean
-    public ConsumerFactory<String, VehicleTelemetryMessage> consumerFactory(ObjectMapper objectMapper) {
-        JsonDeserializer<VehicleTelemetryMessage> deserializer = new JsonDeserializer<>(VehicleTelemetryMessage.class, objectMapper);
-        deserializer.setRemoveTypeHeaders(true);
-        deserializer.setUseTypeHeaders(false);
-        deserializer.addTrustedPackages("*");
-
+    public ConsumerFactory<String, VehicleTelemetryMessage> consumerFactory() {
         Map<String, Object> props = kafkaProperties.buildConsumerProperties(null);
+
+        // Add JsonDeserializer properties - these will be applied via configure()
+        // Using constructor-only (no setters) keeps typeMapper null, avoiding Spring Kafka 3.x conflict
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, VehicleTelemetryMessage.class.getName());
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        // Create deserializer with target type only - don't call any setters!
+        // The factory will call configure() which applies properties from the map
+        JsonDeserializer<VehicleTelemetryMessage> deserializer = new JsonDeserializer<>(VehicleTelemetryMessage.class);
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
