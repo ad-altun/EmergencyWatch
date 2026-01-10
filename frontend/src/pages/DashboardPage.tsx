@@ -7,8 +7,12 @@ import { useVehicles, useAlerts } from "@/hooks";
 import type { VehicleStatus } from "@/types";
 
 export function DashboardPage() {
-    const { data: vehicles = [], isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
-    const { data: alerts = [], isLoading: alertsLoading, error: alertsError } = useAlerts();
+    const { data: vehicles, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
+    const { data: alerts, isLoading: alertsLoading, error: alertsError } = useAlerts();
+
+    // Defensive: Ensure arrays even if API returns unexpected data
+    const safeVehicles = vehicles ?? [];
+    const safeAlerts = alerts ?? [];
 
     const error = vehiclesError || alertsError;
 
@@ -48,22 +52,22 @@ export function DashboardPage() {
     }
 
     const statusCounts: Record<VehicleStatus, number> = {
-        IDLE: vehicles.filter((v) => v.vehicleStatus === "IDLE").length,
-        EN_ROUTE: vehicles.filter((v) => v.vehicleStatus === "EN_ROUTE").length,
-        ON_SCENE: vehicles.filter((v) => v.vehicleStatus === "ON_SCENE").length,
-        RETURNING: vehicles.filter((v) => v.vehicleStatus === "RETURNING").length,
+        IDLE: safeVehicles.filter((v) => v.vehicleStatus === "IDLE").length,
+        EN_ROUTE: safeVehicles.filter((v) => v.vehicleStatus === "EN_ROUTE").length,
+        ON_SCENE: safeVehicles.filter((v) => v.vehicleStatus === "ON_SCENE").length,
+        RETURNING: safeVehicles.filter((v) => v.vehicleStatus === "RETURNING").length,
     };
 
-    const criticalAlerts = alerts.filter(
+    const criticalAlerts = safeAlerts.filter(
         (a) => a.alertType === "HIGH_ENGINE_TEMP" || a.alertType === "LOW_FUEL"
     ).length;
-    const warningAlerts = alerts.length - criticalAlerts;
+    const warningAlerts = safeAlerts.length - criticalAlerts;
 
-    const avgSpeed = vehicles.length > 0
-        ? Math.round(vehicles.reduce((sum, v) => sum + v.speed, 0) / vehicles.length)
+    const avgSpeed = safeVehicles.length > 0
+        ? Math.round(safeVehicles.reduce((sum, v) => sum + v.speed, 0) / safeVehicles.length)
         : 0;
-    const avgFuel = vehicles.length > 0
-        ? Math.round(vehicles.reduce((sum, v) => sum + v.fuelLevel, 0) / vehicles.length)
+    const avgFuel = safeVehicles.length > 0
+        ? Math.round(safeVehicles.reduce((sum, v) => sum + v.fuelLevel, 0) / safeVehicles.length)
         : 0;
 
     return (
@@ -78,8 +82,8 @@ export function DashboardPage() {
             <div className="flex-shrink-0">
                 <StatsCardGrid
                     availableVehicles={statusCounts.IDLE}
-                    totalVehicles={vehicles.length}
-                    totalAlerts={alerts.length}
+                    totalVehicles={safeVehicles.length}
+                    totalAlerts={safeAlerts.length}
                     criticalAlerts={criticalAlerts}
                     warningAlerts={warningAlerts}
                     avgSpeed={avgSpeed}
@@ -91,8 +95,8 @@ export function DashboardPage() {
 
             {/* Panels */}
             <div className="flex-1 flex gap-4 min-h-0">
-                <VehicleListPanel vehicles={vehicles} />
-                <AlertsPanel alerts={alerts} criticalCount={criticalAlerts} />
+                <VehicleListPanel vehicles={safeVehicles} />
+                <AlertsPanel alerts={safeAlerts} criticalCount={criticalAlerts} />
             </div>
         </div>
     );

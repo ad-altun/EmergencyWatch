@@ -14,8 +14,11 @@ interface FuelByVehicleChartProps {
 }
 
 export function FuelByVehicleChart({ data }: FuelByVehicleChartProps) {
+    // Defensive: Ensure data is always an array
+    const safeData = data ?? [];
+
     // Group by vehicle and calculate total consumption
-    // const vehicleConsumption = data.reduce((acc, metric) => {
+    // const vehicleConsumption = safeData.reduce((acc, metric) => {
     //     const vehicleId = metric.vehicleId;
     //     if (!acc[vehicleId]) {
     //         acc[vehicleId] = {
@@ -43,12 +46,12 @@ export function FuelByVehicleChart({ data }: FuelByVehicleChartProps) {
 
     // const vehicles = Object.values(vehicleConsumption);
     const chartData = {
-        // labels: data.map(d => d.vehicleId),
-        labels: [...new Set(data.map(d => d.vehicleId))],
+        // labels: safeData.map(d => d.vehicleId),
+        labels: [...new Set(safeData.map(d => d.vehicleId))],
         datasets: [
             {
                 label: "Fuel Consumed (L)",
-                data: data.map(v => v.totalConsumed),
+                data: safeData.map(v => v.totalConsumed),
                 backgroundColor: [
                     "rgba(59, 130, 246, 0.8)",   // Blue
                     "rgba(34, 197, 94, 0.8)",    // Green

@@ -11,9 +11,12 @@ interface VehicleListPanelProps {
 export function VehicleListPanel( { vehicles }: VehicleListPanelProps ) {
     const [ statusFilter, setStatusFilter ] = useState<VehicleStatus | "ALL">("ALL");
 
+    // Defensive: Ensure vehicles is always an array
+    const safeVehicles = vehicles ?? [];
+
     const filteredVehicles = statusFilter === "ALL"
-        ? vehicles
-        : vehicles.filter(( v ) => v.vehicleStatus === statusFilter);
+        ? safeVehicles
+        : safeVehicles.filter(( v ) => v.vehicleStatus === statusFilter);
 
     // Helper function to format status for display
     const getStatusLabel = ( status: VehicleStatus | "ALL" ) => {
@@ -27,7 +30,7 @@ export function VehicleListPanel( { vehicles }: VehicleListPanelProps ) {
                 <div className="flex items-center gap-2">
                     <h2 className="font-semibold text-white text-sm">Vehicles</h2>
                     <span className="text-xs text-slate-500">
-                        { filteredVehicles.length }/{ vehicles.length }
+                        { filteredVehicles.length }/{ safeVehicles.length }
                     </span>
                 </div>
 
@@ -49,7 +52,7 @@ export function VehicleListPanel( { vehicles }: VehicleListPanelProps ) {
 
             <div className="flex-1 overflow-y-auto min-h-0">
                 {/* No vehicles at all */ }
-                { vehicles.length === 0 ? (
+                { safeVehicles.length === 0 ? (
                     <NoVehiclesState/>
                 ) : filteredVehicles.length === 0 ? (
                     /* Filter returned no results */
