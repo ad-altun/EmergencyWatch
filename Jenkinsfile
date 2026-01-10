@@ -59,6 +59,9 @@ pipeline {
                     // Detect what changed (or use force flags)
                     if (forceAll || forceBackend) {
                         env.BACKEND_CHANGED = 'true'
+                    } else if (forceFrontend) {
+                        // If only frontend is forced, don't build backend
+                        env.BACKEND_CHANGED = 'false'
                     } else {
                         env.BACKEND_CHANGED = sh(
                             script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/' && echo 'true' || echo 'false'",
@@ -68,6 +71,9 @@ pipeline {
 
                     if (forceAll || forceFrontend) {
                         env.FRONTEND_CHANGED = 'true'
+                    } else if (forceBackend) {
+                        // If only backend is forced, don't build frontend
+                        env.FRONTEND_CHANGED = 'false'
                     } else {
                         env.FRONTEND_CHANGED = sh(
                             script: "git diff --name-only HEAD~1 HEAD | grep -q '^frontend/' && echo 'true' || echo 'false'",
@@ -257,7 +263,7 @@ pipeline {
                                 --registry-identity system \
                                 --cpu 0.5 \
                                 --memory 1.0Gi \
-                                --min-replicas 0 \
+                                --min-replicas 1 \
                                 --max-replicas 1
                         fi
                     }
