@@ -30,14 +30,16 @@ const typeColors: Record<VehicleType, string> = {
 };
 
 export function SpeedByTypeChart({ data }: SpeedByTypeChartProps) {
-    const labels = Object.keys(data) as VehicleType[];
+    // Defensive: Ensure data is always an object
+    const safeData = data ?? {} as Record<VehicleType, number>;
+    const labels = Object.keys(safeData) as VehicleType[];
 
     const chartData = {
         labels: labels.map(l => l.replace("_", " ")),
         datasets: [
             {
                 label: "Average Speed (km/h)",
-                data: labels.map(l => data[l]),
+                data: labels.map(l => safeData[l]),
                 backgroundColor: labels.map(l => typeColors[l]),
             },
         ],

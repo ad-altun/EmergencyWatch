@@ -12,6 +12,9 @@ export function AlertsPanel({ alerts, criticalCount }: AlertsPanelProps) {
     const acknowledgeMutation = useAcknowledgeAlert();
     const resolveMutation = useResolveAlert();
 
+    // Defensive: Ensure alerts is always an array
+    const safeAlerts = alerts ?? [];
+
     const isLoading = acknowledgeMutation.isPending || resolveMutation.isPending;
 
     const handleAcknowledge = (id: number) => {
@@ -32,11 +35,11 @@ export function AlertsPanel({ alerts, criticalCount }: AlertsPanelProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0">
-                {alerts.length === 0 ? (
+                {safeAlerts.length === 0 ? (
                     <NoAlertsState />
                 ) : (
                     <div className="p-3 space-y-2">
-                        {alerts.map((alert) => (
+                        {safeAlerts.map((alert) => (
                             <AlertItem
                                 key={alert.id}
                                 alert={alert}
