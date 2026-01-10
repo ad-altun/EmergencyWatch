@@ -4,17 +4,17 @@ import type { Alert } from "@/types";
 
 export const alertsApi = {
     getActiveAlerts: async (): Promise<Alert[]> => {
-        const response = await axiosClient.get(apiPaths.notifications.active);
+        const response = await axiosClient.get(apiPaths.alerts.active);
         return response.data;
     },
 
     acknowledgeAlert: async (alertId: number): Promise<Alert> => {
-        const response = await axiosClient.patch(apiPaths.notifications.acknowledge(alertId));
+        const response = await axiosClient.patch(apiPaths.alerts.acknowledge(alertId));
         return response.data;
     },
 
     resolveAlert: async (alertId: number): Promise<Alert> => {
-        const response = await axiosClient.patch(apiPaths.notifications.resolve(alertId));
+        const response = await axiosClient.patch(apiPaths.alerts.resolve(alertId));
         return response.data;
     },
 };

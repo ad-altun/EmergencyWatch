@@ -2,11 +2,11 @@
  * API Paths Configuration
  *
  * Local Development:
- *   - Uses Vite proxy to route /analytics/* and /notifications/* to backend services
+ *   - Uses Vite proxy to route /analytics/* and /alerts/* to backend services
  *
  * Production (Azure APIM):
  *   - /analytics/* → APIM rewrites to analytics-service /api/analytics/*
- *   - /notifications/* → APIM rewrites to notification-service /api/alerts/*
+ *   - /alerts/* → APIM rewrites to notification-service /api/alerts/*
  *
  * This approach provides:
  *   - Clean, semantic URLs (industry standard)
@@ -24,10 +24,10 @@ export const apiPaths = {
         vehicleTelemetry: (vehicleId: string) => `/analytics/vehicles/${vehicleId}`,
     },
 
-    // Notification Service
-    notifications: {
-        active: '/notifications/active',
-        acknowledge: (alertId: number) => `/notifications/${alertId}/acknowledge`,
-        resolve: (alertId: number) => `/notifications/${alertId}/resolve`,
+    // Alert Service
+    alerts: {
+        active: '/alerts/active',
+        acknowledge: (alertId: number) => `/alerts/${alertId}/acknowledge`,
+        resolve: (alertId: number) => `/alerts/${alertId}/resolve`,
     },
 };
