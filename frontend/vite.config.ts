@@ -19,11 +19,11 @@ export default defineConfig({
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/analytics/, "/api/analytics"),
             },
-            // Notification Service - Clean APIM path structure
-            "/notifications": {
+            // Alert Service - Clean APIM path structure
+            "/alerts": {
                 target: "http://localhost:8083",
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/notifications/, "/api/alerts"),
+                rewrite: (path) => path.replace(/^\/alerts/, "/api/alerts"),
             },
         },
     },
