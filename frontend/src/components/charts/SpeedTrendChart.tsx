@@ -27,7 +27,8 @@ interface SpeedTrendChartProps {
 
 export function SpeedTrendChart({ data }: SpeedTrendChartProps) {
     // Defensive: Ensure data is always an array
-    const validData = (data ?? []).filter(d => d.fleetAverageSpeed !== null);
+    const safeData = Array.isArray(data) ? data : [];
+    const validData = safeData.filter(d => d.fleetAverageSpeed !== null);
 
     const chartData = {
         labels: validData.map(d => d.date),

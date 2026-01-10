@@ -12,7 +12,7 @@ export function VehicleListPanel( { vehicles }: VehicleListPanelProps ) {
     const [ statusFilter, setStatusFilter ] = useState<VehicleStatus | "ALL">("ALL");
 
     // Defensive: Ensure vehicles is always an array
-    const safeVehicles = vehicles ?? [];
+    const safeVehicles = Array.isArray(vehicles) ? vehicles : [];
 
     const filteredVehicles = statusFilter === "ALL"
         ? safeVehicles

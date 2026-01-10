@@ -15,7 +15,7 @@ interface FuelByVehicleChartProps {
 
 export function FuelByVehicleChart({ data }: FuelByVehicleChartProps) {
     // Defensive: Ensure data is always an array
-    const safeData = data ?? [];
+    const safeData = Array.isArray(data) ? data : [];
 
     // Group by vehicle and calculate total consumption
     // const vehicleConsumption = safeData.reduce((acc, metric) => {

@@ -10,9 +10,9 @@ export function DashboardPage() {
     const { data: vehicles, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
     const { data: alerts, isLoading: alertsLoading, error: alertsError } = useAlerts();
 
-    // Defensive: Ensure arrays even if API returns unexpected data
-    const safeVehicles = vehicles ?? [];
-    const safeAlerts = alerts ?? [];
+    // Defensive: Ensure arrays even if API returns unexpected data (e.g. error objects)
+    const safeVehicles = Array.isArray(vehicles) ? vehicles : [];
+    const safeAlerts = Array.isArray(alerts) ? alerts : [];
 
     const error = vehiclesError || alertsError;
 

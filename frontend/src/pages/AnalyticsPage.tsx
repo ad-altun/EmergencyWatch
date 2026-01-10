@@ -31,8 +31,12 @@ export function AnalyticsPage() {
         return <AnalyticsPageSkeleton/>;
     }
 
+    // Defensive: Ensure arrays even if API returns unexpected data
+    const safeDailyMetrics = Array.isArray(data?.dailyFleetMetrics) ? data.dailyFleetMetrics : [];
+    const safeFuelConsumption = Array.isArray(data?.vehicleFuelConsumption) ? data.vehicleFuelConsumption : [];
+
     // No data state
-    if ( !data || data.totalDays === 0 || data.dailyFleetMetrics.length === 0 ) {
+    if ( !data || data.totalDays === 0 || safeDailyMetrics.length === 0 ) {
         return (
             <div className="flex flex-col h-full gap-6">
                 {/* Header */ }
@@ -50,7 +54,7 @@ export function AnalyticsPage() {
     }
 
     // Get latest day's data for type breakdown
-    const latestMetrics = data.dailyFleetMetrics.find(m => m.fleetAverageSpeed !== null);
+    const latestMetrics = safeDailyMetrics.find(m => m.fleetAverageSpeed !== null);
 
     return (
         <div className="flex flex-col h-full gap-6">
@@ -89,8 +93,8 @@ export function AnalyticsPage() {
                     {/* Speed Trend */ }
                     <div className="bg-slate-800 rounded-lg p-4">
                         <h2 className="text-lg font-semibold text-white mb-4">Fleet Average Speed Trend</h2>
-                        { data.dailyFleetMetrics.length > 0 ? (
-                            <SpeedTrendChart data={ data.dailyFleetMetrics }/>
+                        { safeDailyMetrics.length > 0 ? (
+                            <SpeedTrendChart data={ safeDailyMetrics }/>
                         ) : (
                             <NoChartDataState message="No speed trend data available for this period"/>
                         ) }
@@ -116,8 +120,8 @@ export function AnalyticsPage() {
                             <h2 className="text-lg font-semibold text-white mb-4">
                                 Fuel Consumption by Vehicle ({ data.fromDate } to { data.toDate })
                             </h2>
-                            { data.vehicleFuelConsumption && data.vehicleFuelConsumption.length > 0 ? (
-                                <FuelByVehicleChart data={ data.vehicleFuelConsumption }/>
+                            { safeFuelConsumption.length > 0 ? (
+                                <FuelByVehicleChart data={ safeFuelConsumption }/>
                             ) : (
                                 <NoChartDataState message="No fuel consumption data available"/>
                             ) }
@@ -126,8 +130,8 @@ export function AnalyticsPage() {
                             <h2 className="text-lg font-semibold text-white mb-4">
                                 Fuel Consumption by Vehicle ({ data.fromDate } to { data.toDate })
                             </h2>
-                            { data.vehicleFuelConsumption && data.vehicleFuelConsumption.length > 0 ? (
-                                <FuelByVehicleChart data={ data.vehicleFuelConsumption }/>
+                            { safeFuelConsumption.length > 0 ? (
+                                <FuelByVehicleChart data={ safeFuelConsumption }/>
                             ) : (
                                 <NoChartDataState message="No fuel consumption data available"/>
                             ) }

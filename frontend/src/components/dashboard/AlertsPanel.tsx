@@ -13,7 +13,7 @@ export function AlertsPanel({ alerts, criticalCount }: AlertsPanelProps) {
     const resolveMutation = useResolveAlert();
 
     // Defensive: Ensure alerts is always an array
-    const safeAlerts = alerts ?? [];
+    const safeAlerts = Array.isArray(alerts) ? alerts : [];
 
     const isLoading = acknowledgeMutation.isPending || resolveMutation.isPending;
 
