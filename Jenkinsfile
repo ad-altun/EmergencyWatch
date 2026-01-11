@@ -238,42 +238,77 @@ pipeline {
                 expression { env.BACKEND_CHANGED == 'true' }
             }
             steps {
-                sh '''
-                    # Function to deploy a container app (create if not exists, update if exists)
-                    deploy_containerapp() {
-                        local APP_NAME=$1
-                        local IMAGE=$2
+                timeout(time: 15, unit: 'MINUTES') {
+                    sh '''
+                        # Function to deploy a container app (create if not exists, update if exists)
+                        deploy_containerapp() {
+                            local APP_NAME=$1
+                            local IMAGE=$2
 
-                        echo "Deploying $APP_NAME..."
+                            echo "========================================"
+                            echo "Deploying $APP_NAME with image $IMAGE"
+                            echo "========================================"
 
-                        if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
-                            echo "$APP_NAME exists, updating..."
-                            az containerapp update \
-                                --name $APP_NAME \
-                                --resource-group $RESOURCE_GROUP \
-                                --image $IMAGE
-                        else
-                            echo "$APP_NAME does not exist, creating..."
-                            az containerapp create \
-                                --name $APP_NAME \
-                                --resource-group $RESOURCE_GROUP \
-                                --environment $CONTAINER_ENV \
-                                --image $IMAGE \
-                                --registry-server $ACR_LOGIN_SERVER \
-                                --registry-identity system \
-                                --cpu 0.5 \
-                                --memory 1.0Gi \
-                                --min-replicas 1 \
-                                --max-replicas 1
-                        fi
-                    }
+                            # Check if app exists (with timeout)
+                            if timeout 30s az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
+                                echo "$APP_NAME exists, updating..."
 
-                    # Deploy all services
-                    deploy_containerapp "vehicle-simulator" "$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
-                    deploy_containerapp "data-processor" "$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
-                    deploy_containerapp "analytics-service" "$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
-                    deploy_containerapp "notification-service" "$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
-                '''
+                                # Update with --no-wait to avoid hanging
+                                az containerapp update \
+                                    --name $APP_NAME \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --image $IMAGE \
+                                    --output none
+
+                                # Wait for update to complete (max 5 minutes)
+                                echo "Waiting for $APP_NAME to finish updating..."
+                                timeout 300s bash -c "
+                                    while true; do
+                                        STATE=\$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
+                                        echo \"Current state: \$STATE\"
+                                        if [ \"\$STATE\" = \"Succeeded\" ]; then
+                                            echo \"✅ $APP_NAME updated successfully\"
+                                            break
+                                        elif [ \"\$STATE\" = \"Failed\" ]; then
+                                            echo \"❌ $APP_NAME update failed\"
+                                            exit 1
+                                        fi
+                                        sleep 10
+                                    done
+                                " || {
+                                    echo "⚠️ Update timeout or failed for $APP_NAME"
+                                    exit 1
+                                }
+                            else
+                                echo "$APP_NAME does not exist, creating..."
+                                az containerapp create \
+                                    --name $APP_NAME \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $CONTAINER_ENV \
+                                    --image $IMAGE \
+                                    --registry-server $ACR_LOGIN_SERVER \
+                                    --registry-identity system \
+                                    --cpu 0.5 \
+                                    --memory 1.0Gi \
+                                    --min-replicas 1 \
+                                    --max-replicas 1 \
+                                    --output none
+
+                                echo "✅ $APP_NAME created successfully"
+                            fi
+                        }
+
+                        # Deploy all services sequentially
+                        deploy_containerapp "vehicle-simulator" "$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
+                        deploy_containerapp "data-processor" "$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
+                        deploy_containerapp "analytics-service" "$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
+                        deploy_containerapp "notification-service" "$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
+
+                        echo "========================================"
+                        echo "✅ All Container Apps deployed!"
+                        echo "========================================"
+                    '''
+                }
             }
         }
 
