@@ -149,7 +149,14 @@ public class AnalyticsController {
     @Operation(summary = "Get latest telemetry per vehicle", description = "Returns the most recent telemetry record for each vehicle")
     @GetMapping("/telemetry/latest")
     public ResponseEntity<List<VehicleTelemetry>> getLatestTelemetry() {
-        return ResponseEntity.ok(analyticsService.getLatestTelemetry());
+        List<VehicleTelemetry> data = analyticsService.getLatestTelemetry();
+
+        // FIX: Ensure we return [] (empty JSON array) instead of null (which causes 0-byte body)
+        if (data == null) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        return ResponseEntity.ok(data);
     }
 
     // Helper methods
