@@ -13,6 +13,7 @@ import de.denizaltun.analyticsservice.model.VehicleMetrics;
 import de.denizaltun.analyticsservice.repository.DailyFleetMetricsRepository;
 import de.denizaltun.analyticsservice.repository.DailyVehicleMetricsRepository;
 import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,68 @@ public class AnalyticsService {
         this.fleetMetricsRepository = fleetMetricsRepository;
         this.vehicleMetricsRepository = vehicleMetricsRepository;
         this.vehicleTelemetryRepository = vehicleTelemetryRepository;
+    }
+
+    /**
+     * CRITICAL FIX: Restore in-memory state from Database on startup.
+     *
+     * This method runs automatically after the service is constructed.
+     * It loads the latest telemetry for each vehicle from PostgreSQL and
+     * populates the in-memory maps that the dashboard reads from.
+     *
+     * Without this, when the container restarts on Azure, the maps are empty
+     * and the UI shows no data until new Kafka messages arrive.
+     */
+    @PostConstruct
+    public void restoreStateFromDatabase() {
+        log.info("=== STARTUP: Restoring vehicle state from Database ===");
+
+        try {
+            // Fetch the latest telemetry for every vehicle from PostgreSQL
+            List<VehicleTelemetry> latestData = vehicleTelemetryRepository.findLatestTelemetryPerVehicle();
+
+            if (latestData == null || latestData.isEmpty()) {
+                log.warn("STARTUP: Database is empty. Waiting for new Kafka messages to populate data.");
+                return;
+            }
+
+            // Re-populate the in-memory Maps from DB
+            for (VehicleTelemetry telemetry : latestData) {
+                // Re-create the VehicleMetrics object
+                VehicleMetrics metrics = new VehicleMetrics(
+                    telemetry.getVehicleId(),
+                    telemetry.getVehicleType(),
+                    telemetry.getVehicleStatus()
+                );
+
+                // Set values from the last known DB record
+                metrics.updateMetrics(
+                    telemetry.getSpeed(),
+                    telemetry.getFuelLevel(),
+                    telemetry.getVehicleStatus(),
+                    telemetry.getTimeStamp()
+                );
+
+                // Put into the Maps that the UI reads from
+                vehicleMetricsMap.put(telemetry.getVehicleId(), metrics);
+                lastKnownStatus.put(telemetry.getVehicleId(), telemetry.getVehicleStatus());
+
+                // Register vehicle with fleet metrics
+                fleetMetrics.registerVehicle(telemetry.getVehicleType());
+
+                // Also update the fleet status count
+                fleetMetrics.updateVehicleStatus(null, telemetry.getVehicleStatus());
+            }
+
+            log.info("=== STARTUP: Successfully restored {} vehicles from DB into Memory ===", vehicleMetricsMap.size());
+            log.info("Fleet now tracking {} vehicles across {} types",
+                fleetMetrics.getTotalVehicles().get(),
+                fleetMetrics.getVehiclesByType().size()
+            );
+
+        } catch (Exception e) {
+            log.error("STARTUP: Failed to restore state from database. Dashboard will be empty until Kafka messages arrive.", e);
+        }
     }
 
     /**
