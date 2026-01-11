@@ -23,25 +23,6 @@ properties:
           - name: SPRING_PROFILES_ACTIVE
             value: prod
 
-        probes:
-          - type: Readiness
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-
-          - type: Liveness
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-
     scale:
       minReplicas: 1
       maxReplicas: 1
