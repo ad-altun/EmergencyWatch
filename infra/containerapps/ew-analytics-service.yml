@@ -1,9 +1,9 @@
 name: analytics-service
-type: Microsoft.Web/containerApps
+type: Microsoft.App/containerApps
 location: ${LOCATION}
 
 properties:
-  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Web/managedEnvironments/${ENVIRONMENT_NAME}
+  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
 
   configuration:
     ingress:
