@@ -2,9 +2,12 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'FORCE_ALL', defaultValue: false, description: 'Force build and deploy ALL components (backend + frontend)')
-        booleanParam(name: 'FORCE_BACKEND', defaultValue: false, description: 'Force build and deploy backend services only')
+        booleanParam(name: 'FORCE_ALL', defaultValue: false, description: 'Force build and deploy ALL components')
         booleanParam(name: 'FORCE_FRONTEND', defaultValue: false, description: 'Force build and deploy frontend only')
+        booleanParam(name: 'FORCE_VEHICLE_SIMULATOR', defaultValue: false, description: 'Force build and deploy vehicle-simulator')
+        booleanParam(name: 'FORCE_DATA_PROCESSOR', defaultValue: false, description: 'Force build and deploy data-processor')
+        booleanParam(name: 'FORCE_ANALYTICS_SERVICE', defaultValue: false, description: 'Force build and deploy analytics-service')
+        booleanParam(name: 'FORCE_NOTIFICATION_SERVICE', defaultValue: false, description: 'Force build and deploy notification-service')
     }
 
     tools {
@@ -53,27 +56,47 @@ pipeline {
                 script {
                     // Check if force parameters are set
                     def forceAll = params.FORCE_ALL ?: false
-                    def forceBackend = params.FORCE_BACKEND ?: false
-                    def forceFrontend = params.FORCE_FRONTEND ?: false
 
-                    // Detect what changed (or use force flags)
-                    if (forceAll || forceBackend) {
-                        env.BACKEND_CHANGED = 'true'
-                    } else if (forceFrontend) {
-                        // If only frontend is forced, don't build backend
-                        env.BACKEND_CHANGED = 'false'
+                    // Detect changes for each backend service
+                    if (forceAll || params.FORCE_VEHICLE_SIMULATOR) {
+                        env.VEHICLE_SIMULATOR_CHANGED = 'true'
                     } else {
-                        env.BACKEND_CHANGED = sh(
-                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/' && echo 'true' || echo 'false'",
+                        env.VEHICLE_SIMULATOR_CHANGED = sh(
+                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/vehicle-simulator/' && echo 'true' || echo 'false'",
                             returnStdout: true
                         ).trim()
                     }
 
-                    if (forceAll || forceFrontend) {
+                    if (forceAll || params.FORCE_DATA_PROCESSOR) {
+                        env.DATA_PROCESSOR_CHANGED = 'true'
+                    } else {
+                        env.DATA_PROCESSOR_CHANGED = sh(
+                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/data-processor/' && echo 'true' || echo 'false'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    if (forceAll || params.FORCE_ANALYTICS_SERVICE) {
+                        env.ANALYTICS_SERVICE_CHANGED = 'true'
+                    } else {
+                        env.ANALYTICS_SERVICE_CHANGED = sh(
+                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/analytics-service/' && echo 'true' || echo 'false'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    if (forceAll || params.FORCE_NOTIFICATION_SERVICE) {
+                        env.NOTIFICATION_SERVICE_CHANGED = 'true'
+                    } else {
+                        env.NOTIFICATION_SERVICE_CHANGED = sh(
+                            script: "git diff --name-only HEAD~1 HEAD | grep -q '^services/notification-service/' && echo 'true' || echo 'false'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    // Detect frontend changes
+                    if (forceAll || params.FORCE_FRONTEND) {
                         env.FRONTEND_CHANGED = 'true'
-                    } else if (forceBackend) {
-                        // If only backend is forced, don't build frontend
-                        env.FRONTEND_CHANGED = 'false'
                     } else {
                         env.FRONTEND_CHANGED = sh(
                             script: "git diff --name-only HEAD~1 HEAD | grep -q '^frontend/' && echo 'true' || echo 'false'",
@@ -82,11 +105,13 @@ pipeline {
                     }
 
                     echo "========================================"
+                    echo "Change Detection Results:"
                     echo "Force All: ${forceAll}"
-                    echo "Force Backend: ${forceBackend}"
-                    echo "Force Frontend: ${forceFrontend}"
-                    echo "Backend will build: ${env.BACKEND_CHANGED}"
-                    echo "Frontend will build: ${env.FRONTEND_CHANGED}"
+                    echo "Vehicle Simulator: ${env.VEHICLE_SIMULATOR_CHANGED}"
+                    echo "Data Processor: ${env.DATA_PROCESSOR_CHANGED}"
+                    echo "Analytics Service: ${env.ANALYTICS_SERVICE_CHANGED}"
+                    echo "Notification Service: ${env.NOTIFICATION_SERVICE_CHANGED}"
+                    echo "Frontend: ${env.FRONTEND_CHANGED}"
                     echo "========================================"
                 }
             }
@@ -97,7 +122,7 @@ pipeline {
         // ============================================
         stage('Backend: Build vehicle-simulator') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.VEHICLE_SIMULATOR_CHANGED == 'true' }
             }
             steps {
                 dir('services/vehicle-simulator') {
@@ -113,7 +138,7 @@ pipeline {
 
         stage('Backend: Build data-processor') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.DATA_PROCESSOR_CHANGED == 'true' }
             }
             steps {
                 dir('services/data-processor') {
@@ -129,7 +154,7 @@ pipeline {
 
         stage('Backend: Build analytics-service') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.ANALYTICS_SERVICE_CHANGED == 'true' }
             }
             steps {
                 dir('services/analytics-service') {
@@ -145,7 +170,7 @@ pipeline {
 
         stage('Backend: Build notification-service') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.NOTIFICATION_SERVICE_CHANGED == 'true' }
             }
             steps {
                 dir('services/notification-service') {
@@ -161,7 +186,12 @@ pipeline {
 
         stage('Backend: Code Coverage') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                anyOf {
+                    expression { env.VEHICLE_SIMULATOR_CHANGED == 'true' }
+                    expression { env.DATA_PROCESSOR_CHANGED == 'true' }
+                    expression { env.ANALYTICS_SERVICE_CHANGED == 'true' }
+                    expression { env.NOTIFICATION_SERVICE_CHANGED == 'true' }
+                }
             }
             steps {
                 // Using Coverage Plugin (replacement for deprecated JaCoCo plugin)
@@ -177,7 +207,12 @@ pipeline {
         // ============================================
         stage('Backend: Azure Login') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                anyOf {
+                    expression { env.VEHICLE_SIMULATOR_CHANGED == 'true' }
+                    expression { env.DATA_PROCESSOR_CHANGED == 'true' }
+                    expression { env.ANALYTICS_SERVICE_CHANGED == 'true' }
+                    expression { env.NOTIFICATION_SERVICE_CHANGED == 'true' }
+                }
             }
             steps {
                 sh '''
@@ -192,12 +227,11 @@ pipeline {
             }
         }
 
-        stage('Backend: Build & Push Docker Images') {
+        stage('Backend: Build & Push vehicle-simulator') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.VEHICLE_SIMULATOR_CHANGED == 'true' }
             }
             steps {
-                // Sequential Docker builds to save RAM
                 dir('services/vehicle-simulator') {
                     sh '''
                         docker build -t $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT \
@@ -206,6 +240,14 @@ pipeline {
                         docker push $ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:latest
                     '''
                 }
+            }
+        }
+
+        stage('Backend: Build & Push data-processor') {
+            when {
+                expression { env.DATA_PROCESSOR_CHANGED == 'true' }
+            }
+            steps {
                 dir('services/data-processor') {
                     sh '''
                         docker build -t $ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT \
@@ -214,6 +256,14 @@ pipeline {
                         docker push $ACR_LOGIN_SERVER/emergencywatch/data-processor:latest
                     '''
                 }
+            }
+        }
+
+        stage('Backend: Build & Push analytics-service') {
+            when {
+                expression { env.ANALYTICS_SERVICE_CHANGED == 'true' }
+            }
+            steps {
                 dir('services/analytics-service') {
                     sh '''
                         docker build -t $ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT \
@@ -222,6 +272,14 @@ pipeline {
                         docker push $ACR_LOGIN_SERVER/emergencywatch/analytics-service:latest
                     '''
                 }
+            }
+        }
+
+        stage('Backend: Build & Push notification-service') {
+            when {
+                expression { env.NOTIFICATION_SERVICE_CHANGED == 'true' }
+            }
+            steps {
                 dir('services/notification-service') {
                     sh '''
                         docker build -t $ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT \
@@ -233,14 +291,13 @@ pipeline {
             }
         }
 
-        stage('Backend: Deploy to Container Apps') {
+        stage('Backend: Deploy vehicle-simulator') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.VEHICLE_SIMULATOR_CHANGED == 'true' }
             }
             steps {
-                timeout(time: 15, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     sh '''
-                        # Function to deploy a container app (create if not exists, update if exists)
                         deploy_containerapp() {
                             local APP_NAME=$1
                             local IMAGE=$2
@@ -249,18 +306,14 @@ pipeline {
                             echo "Deploying $APP_NAME with image $IMAGE"
                             echo "========================================"
 
-                            # Check if app exists
                             if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
-                                # Check current state
                                 CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
-                                echo "Current state before update: $CURRENT_STATE"
+                                echo "Current state: $CURRENT_STATE"
 
-                                # If in Failed state, delete and recreate
                                 if [ "$CURRENT_STATE" = "Failed" ]; then
-                                    echo "⚠️ $APP_NAME is in Failed state, deleting..."
+                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
                                     az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
                                     sleep 20
-                                    echo "Creating fresh $APP_NAME..."
                                     timeout 300s az containerapp create \
                                         --name $APP_NAME \
                                         --resource-group $RESOURCE_GROUP \
@@ -268,24 +321,16 @@ pipeline {
                                         --image $IMAGE \
                                         --registry-server $ACR_LOGIN_SERVER \
                                         --registry-identity system \
-                                        --cpu 0.75 \
-                                        --memory 1.5Gi \
-                                        --min-replicas 1 \
-                                        --max-replicas 1
-                                    echo "✅ $APP_NAME recreated"
+                                        --cpu 0.5 --memory 1Gi \
+                                        --min-replicas 0 --max-replicas 1
                                 else
-                                    # Normal update
-                                    echo "$APP_NAME exists, updating image and resources..."
                                     timeout 300s az containerapp update \
                                         --name $APP_NAME \
                                         --resource-group $RESOURCE_GROUP \
                                         --image $IMAGE \
-                                        --cpu 0.75 \
-                                        --memory 1.5Gi
-                                    echo "✅ $APP_NAME updated successfully"
+                                        --cpu 0.5 --memory 1Gi
                                 fi
                             else
-                                echo "$APP_NAME does not exist, creating..."
                                 timeout 300s az containerapp create \
                                     --name $APP_NAME \
                                     --resource-group $RESOURCE_GROUP \
@@ -293,23 +338,190 @@ pipeline {
                                     --image $IMAGE \
                                     --registry-server $ACR_LOGIN_SERVER \
                                     --registry-identity system \
-                                    --cpu 0.75 \
-                                    --memory 1.5Gi \
-                                    --min-replicas 1 \
-                                    --max-replicas 1
-                                echo "✅ $APP_NAME created successfully"
+                                    --cpu 0.5 --memory 1Gi \
+                                    --min-replicas 0 --max-replicas 1
                             fi
+                            echo "✅ $APP_NAME deployed"
                         }
 
-                        # Deploy all services sequentially
                         deploy_containerapp "vehicle-simulator" "$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
-                        deploy_containerapp "data-processor" "$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
-                        deploy_containerapp "analytics-service" "$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
-                        deploy_containerapp "notification-service" "$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
+                    '''
+                }
+            }
+        }
 
-                        echo "========================================"
-                        echo "✅ All Container Apps deployed!"
-                        echo "========================================"
+        stage('Backend: Deploy data-processor') {
+            when {
+                expression { env.DATA_PROCESSOR_CHANGED == 'true' }
+            }
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh '''
+                        deploy_containerapp() {
+                            local APP_NAME=$1
+                            local IMAGE=$2
+
+                            echo "========================================"
+                            echo "Deploying $APP_NAME with image $IMAGE"
+                            echo "========================================"
+
+                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
+                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
+                                echo "Current state: $CURRENT_STATE"
+
+                                if [ "$CURRENT_STATE" = "Failed" ]; then
+                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
+                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
+                                    sleep 20
+                                    timeout 300s az containerapp create \
+                                        --name $APP_NAME \
+                                        --resource-group $RESOURCE_GROUP \
+                                        --environment $CONTAINER_ENV \
+                                        --image $IMAGE \
+                                        --registry-server $ACR_LOGIN_SERVER \
+                                        --registry-identity system \
+                                        --cpu 0.5 --memory 1Gi \
+                                        --min-replicas 0 --max-replicas 1
+                                else
+                                    timeout 300s az containerapp update \
+                                        --name $APP_NAME \
+                                        --resource-group $RESOURCE_GROUP \
+                                        --image $IMAGE \
+                                        --cpu 0.5 --memory 1Gi
+                                fi
+                            else
+                                timeout 300s az containerapp create \
+                                    --name $APP_NAME \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $CONTAINER_ENV \
+                                    --image $IMAGE \
+                                    --registry-server $ACR_LOGIN_SERVER \
+                                    --registry-identity system \
+                                    --cpu 0.5 --memory 1Gi \
+                                    --min-replicas 0 --max-replicas 1
+                            fi
+                            echo "✅ $APP_NAME deployed"
+                        }
+
+                        deploy_containerapp "data-processor" "$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
+                    '''
+                }
+            }
+        }
+
+        stage('Backend: Deploy analytics-service') {
+            when {
+                expression { env.ANALYTICS_SERVICE_CHANGED == 'true' }
+            }
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh '''
+                        deploy_containerapp() {
+                            local APP_NAME=$1
+                            local IMAGE=$2
+
+                            echo "========================================"
+                            echo "Deploying $APP_NAME with image $IMAGE"
+                            echo "========================================"
+
+                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
+                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
+                                echo "Current state: $CURRENT_STATE"
+
+                                if [ "$CURRENT_STATE" = "Failed" ]; then
+                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
+                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
+                                    sleep 20
+                                    timeout 300s az containerapp create \
+                                        --name $APP_NAME \
+                                        --resource-group $RESOURCE_GROUP \
+                                        --environment $CONTAINER_ENV \
+                                        --image $IMAGE \
+                                        --registry-server $ACR_LOGIN_SERVER \
+                                        --registry-identity system \
+                                        --cpu 0.5 --memory 1Gi \
+                                        --min-replicas 0 --max-replicas 1
+                                else
+                                    timeout 300s az containerapp update \
+                                        --name $APP_NAME \
+                                        --resource-group $RESOURCE_GROUP \
+                                        --image $IMAGE \
+                                        --cpu 0.5 --memory 1Gi
+                                fi
+                            else
+                                timeout 300s az containerapp create \
+                                    --name $APP_NAME \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $CONTAINER_ENV \
+                                    --image $IMAGE \
+                                    --registry-server $ACR_LOGIN_SERVER \
+                                    --registry-identity system \
+                                    --cpu 0.5 --memory 1Gi \
+                                    --min-replicas 0 --max-replicas 1
+                            fi
+                            echo "✅ $APP_NAME deployed"
+                        }
+
+                        deploy_containerapp "analytics-service" "$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
+                    '''
+                }
+            }
+        }
+
+        stage('Backend: Deploy notification-service') {
+            when {
+                expression { env.NOTIFICATION_SERVICE_CHANGED == 'true' }
+            }
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh '''
+                        deploy_containerapp() {
+                            local APP_NAME=$1
+                            local IMAGE=$2
+
+                            echo "========================================"
+                            echo "Deploying $APP_NAME with image $IMAGE"
+                            echo "========================================"
+
+                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
+                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
+                                echo "Current state: $CURRENT_STATE"
+
+                                if [ "$CURRENT_STATE" = "Failed" ]; then
+                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
+                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
+                                    sleep 20
+                                    timeout 300s az containerapp create \
+                                        --name $APP_NAME \
+                                        --resource-group $RESOURCE_GROUP \
+                                        --environment $CONTAINER_ENV \
+                                        --image $IMAGE \
+                                        --registry-server $ACR_LOGIN_SERVER \
+                                        --registry-identity system \
+                                        --cpu 0.5 --memory 1Gi \
+                                        --min-replicas 0 --max-replicas 1
+                                else
+                                    timeout 300s az containerapp update \
+                                        --name $APP_NAME \
+                                        --resource-group $RESOURCE_GROUP \
+                                        --image $IMAGE \
+                                        --cpu 0.5 --memory 1Gi
+                                fi
+                            else
+                                timeout 300s az containerapp create \
+                                    --name $APP_NAME \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $CONTAINER_ENV \
+                                    --image $IMAGE \
+                                    --registry-server $ACR_LOGIN_SERVER \
+                                    --registry-identity system \
+                                    --cpu 0.5 --memory 1Gi \
+                                    --min-replicas 0 --max-replicas 1
+                            fi
+                            echo "✅ $APP_NAME deployed"
+                        }
+
+                        deploy_containerapp "notification-service" "$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
                     '''
                 }
             }
@@ -336,7 +548,12 @@ pipeline {
             when {
                 allOf {
                     expression { env.FRONTEND_CHANGED == 'true' }
-                    expression { env.BACKEND_CHANGED == 'false' }
+                    expression {
+                        env.VEHICLE_SIMULATOR_CHANGED == 'false' &&
+                        env.DATA_PROCESSOR_CHANGED == 'false' &&
+                        env.ANALYTICS_SERVICE_CHANGED == 'false' &&
+                        env.NOTIFICATION_SERVICE_CHANGED == 'false'
+                    }
                 }
             }
             steps {
