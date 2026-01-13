@@ -26,7 +26,7 @@ export function AlertsPanel({ alerts, criticalCount }: AlertsPanelProps) {
     };
 
     return (
-        <div className="w-72 lg:w-80 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col min-h-0 flex-shrink-0">
+        <div className="w-full lg:w-80 min-h-[300px] lg:min-h-0 mb-0 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col lg:flex-shrink-0">
             <div className="flex items-center justify-between p-3 border-b border-slate-800 flex-shrink-0">
                 <h2 className="font-semibold text-white text-sm">Alerts</h2>
                 <span className="px-2 py-0.5 bg-red-500/20 text-red-400 rounded-full text-xs font-medium">

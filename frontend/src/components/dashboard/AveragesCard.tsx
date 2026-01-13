@@ -2,27 +2,27 @@ import { Gauge } from "lucide-react";
 
 interface AveragesCardProps {
     avgSpeed: number;
-    avgResponseTime: number;
+    // avgResponseTime: number;
     avgFuel: number;
 }
 
-export function AveragesCard({ avgSpeed, avgResponseTime, avgFuel }: AveragesCardProps) {
+export function AveragesCard({ avgSpeed, avgFuel }: AveragesCardProps) {
     return (
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 hover:border-slate-600 transition-colors">
             <div className="flex items-center justify-between mb-2">
                 <span className="text-slate-400 text-xs font-medium">Fleet Averages</span>
                 <Gauge size={14} className="text-amber-400" />
             </div>
-            <div className="grid grid-cols-3 gap-2">
-                <div>
+            <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-baseline gap-2">
                     <p className="text-lg font-bold text-white">{avgSpeed || 0}</p>
                     <p className="text-slate-500 text-xs">km/h</p>
                 </div>
-                <div className="hidden sm:block">
-                    <p className="text-lg font-bold text-white">{avgResponseTime || 0}</p>
-                    <p className="text-slate-500 text-xs">min resp</p>
-                </div>
-                <div>
+                {/*<div className="hidden sm:block">*/}
+                {/*    <p className="text-lg font-bold text-white">{avgResponseTime || 0}</p>*/}
+                {/*    <p className="text-slate-500 text-xs">min resp</p>*/}
+                {/*</div>*/}
+                <div className="flex items-baseline gap-2">
                     <p className="text-lg font-bold text-white">{avgFuel || 0}%</p>
                     <p className="text-slate-500 text-xs">fuel</p>
                 </div>

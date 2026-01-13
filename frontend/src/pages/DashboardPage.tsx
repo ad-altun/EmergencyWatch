@@ -21,7 +21,7 @@ export function DashboardPage() {
             <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                     <p className="text-red-400 font-semibold mb-2">Failed to load data</p>
-                    <p className="text-slate-400 text-sm">Please check if the backend services are running</p>
+                    <p className="text-slate-400 text-sm">Please check if the server is active</p>
                 </div>
             </div>
         );
@@ -43,7 +43,7 @@ export function DashboardPage() {
                 </div>
 
                 {/* Panels Skeleton */}
-                <div className="flex-1 flex gap-4 min-h-0">
+                <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
                     <VehicleListSkeleton />
                     <VehicleListSkeleton /> {/* Reuse for alerts panel */}
                 </div>
@@ -71,7 +71,7 @@ export function DashboardPage() {
         : 0;
 
     return (
-        <div className="flex flex-col h-full gap-4">
+        <div className="flex flex-col h-full gap-4 pb-0">
             {/* Header */}
             <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-white">Fleet Dashboard</h1>
@@ -87,14 +87,14 @@ export function DashboardPage() {
                     criticalAlerts={criticalAlerts}
                     warningAlerts={warningAlerts}
                     avgSpeed={avgSpeed}
-                    avgResponseTime={4.2}
+                    // avgResponseTime={4.2}
                     avgFuel={avgFuel}
                     statusCounts={statusCounts}
                 />
             </div>
 
             {/* Panels */}
-            <div className="flex-1 flex gap-4 min-h-0">
+            <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
                 <VehicleListPanel vehicles={safeVehicles} />
                 <AlertsPanel alerts={safeAlerts} criticalCount={criticalAlerts} />
             </div>

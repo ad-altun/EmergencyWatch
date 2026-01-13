@@ -12,11 +12,13 @@ export function VehiclesCard({ available, total }: VehiclesCardProps) {
                 <span className="text-slate-400 text-xs font-medium">Vehicles</span>
                 <Truck size={14} className="text-blue-400" />
             </div>
-            <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">{available}</span>
-                <span className="text-slate-500 text-sm">/ {total}</span>
+            <div className="flex items-baseline gap-3">
+                <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold text-white">{available}</span>
+                    <span className="text-slate-500 text-sm">/ {total}</span>
+                </div>
+                <p className="text-slate-500 text-xs mt-1">available</p>
             </div>
-            <p className="text-slate-500 text-xs mt-1">available</p>
         </div>
     );
 }

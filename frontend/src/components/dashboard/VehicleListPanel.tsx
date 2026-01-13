@@ -25,7 +25,7 @@ export function VehicleListPanel( { vehicles }: VehicleListPanelProps ) {
     };
 
     return (
-        <div className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col min-h-0 min-w-0">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col min-w-0">
             <div className="flex items-center justify-between p-3 border-b border-slate-800 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <h2 className="font-semibold text-white text-sm">Vehicles</h2>

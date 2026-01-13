@@ -19,7 +19,7 @@ export function MainLayout() {
                     onMobileClose={() => setMobileMenuOpen(false)}
                 />
 
-                <main className="flex-1 flex flex-col min-h-0 min-w-0 p-4 overflow-auto">
+                <main className="flex-1 flex flex-col min-h-0 min-w-0 p-5 overflow-auto mb-8">
                     <Outlet />
                 </main>
             </div>
