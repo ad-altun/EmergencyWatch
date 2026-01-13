@@ -1,5 +1,3 @@
-identity:
-  type: SystemAssigned
 properties:
   environmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
   configuration:
@@ -12,11 +10,14 @@ properties:
         - weight: 100
     registries:
       - server: ${ACR_NAME}.azurecr.io
-        identity: SystemAssigned
+        identity: system
   template:
     containers:
       - image: ${FULL_IMAGE_NAME}
         name: analytics-service
+        resources:
+          cpu: 0.5
+          memory: 1Gi
         probes:
           - type: Startup
             httpGet:
@@ -42,12 +43,6 @@ properties:
         env:
           - name: "SPRING_PROFILES_ACTIVE"
             value: "prod"
-    initContainers:
-      - image: ${FULL_IMAGE_NAME}
-        name: analytics-service
-        resources:
-          cpu: 0.5
-          memory: 1Gi
     scale:
       minReplicas: 0
       maxReplicas: 1

@@ -412,11 +412,12 @@ pipeline {
                         cat -e deploy-analytics.yml
                         # --- DEBUG END ---
 
-                        # Deploy using YAML
+                        # Deploy using YAML with system-assigned managed identity
                         az containerapp create \
                             --name analytics-service \
                             --resource-group $RESOURCE_GROUP \
                             --environment $ENVIRONMENT_NAME \
+                            --mi-system-assigned \
                             --yaml deploy-analytics.yml
 
                         echo "✅ analytics-service deployed with full configuration"
