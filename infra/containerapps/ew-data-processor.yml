@@ -1,35 +1,28 @@
-name: data-processor
-type: Microsoft.App/containerApps
-location: ${LOCATION}
+configuration:
+  registries:
+    - server: ${ACR_NAME}.azurecr.io
+      identity: system
 
-properties:
-  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+template:
+  containers:
+    - name: data-processor
+      image: ${FULL_IMAGE_NAME}
 
-  configuration:
-    registries:
-      - server: ${ACR_NAME}.azurecr.io
-        identity: system
+      resources:
+        cpu: 0.5
+        memory: 1Gi
 
-  template:
-    containers:
-      - name: data-processor
-        image: ${FULL_IMAGE_NAME}
+      env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
 
-        resources:
-          cpu: 0.5
-          memory: 1Gi
-
-        env:
-          - name: SPRING_PROFILES_ACTIVE
-            value: prod
-
-    scale:
-      minReplicas: 0
-      maxReplicas: 1
-      rules:
-        - name: kafka-scale
-          custom:
-            type: kafka
-            metadata:
-              topic: vehicle-telemetry
-              lagThreshold: "10"
+  scale:
+    minReplicas: 0
+    maxReplicas: 1
+    rules:
+      - name: kafka-scale
+        custom:
+          type: kafka
+          metadata:
+            topic: vehicle-telemetry
+            lagThreshold: "10"
