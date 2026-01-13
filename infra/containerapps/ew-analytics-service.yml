@@ -1,8 +1,7 @@
-name: analytics-service
-
-managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
-
+identity:
+  type: SystemAssigned
 properties:
+  environmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
   configuration:
     activeRevisionsMode: Single
     ingress:
@@ -11,49 +10,44 @@ properties:
       transport: auto
       traffic:
         - weight: 100
-
     registries:
       - server: ${ACR_NAME}.azurecr.io
         identity: SystemAssigned
-
   template:
     containers:
-      - name: analytics-service
-        image: ${FULL_IMAGE_NAME}
-
-        resources:
-          cpu: 0.5
-          memory: 1Gi
-
-        env:
-          - name: SPRING_PROFILES_ACTIVE
-            value: prod
-
+      - image: ${FULL_IMAGE_NAME}
+        name: analytics-service
         probes:
           - type: Startup
             httpGet:
-              path: /actuator/health/liveness
+              path: "/actuator/health/readiness"
               port: 8082
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 24
-
           - type: Readiness
             httpGet:
-              path: /actuator/health/readiness
+              path: "/actuator/health/readiness"
               port: 8082
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
-
           - type: Liveness
             httpGet:
-              path: /actuator/health/liveness
+              path: "/actuator/health/liveness"
               port: 8082
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
-
+        env:
+          - name: "SPRING_PROFILES_ACTIVE"
+            value: "prod"
+    initContainers:
+      - image: ${FULL_IMAGE_NAME}
+        name: analytics-service
+        resources:
+          cpu: 0.5
+          memory: 1Gi
     scale:
       minReplicas: 0
       maxReplicas: 1
@@ -61,4 +55,8 @@ properties:
         - name: http-scale
           http:
             metadata:
-              concurrentRequests: "50"
+              concurrentRequests: '50'
+
+
+
+

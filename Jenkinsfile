@@ -367,6 +367,15 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     sh '''
+                        echo "🔍 Checking required tools on Jenkins agent..."
+
+                        which envsubst || {
+                           echo "❌ envsubst not installed (package: gettext)"
+                           exit 1
+                        }
+
+                        echo "✅ Tool validation complete"
+
                         # Setup variables for YAML substitution
                         export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
                         export LOCATION="$LOCATION"
@@ -382,10 +391,32 @@ pipeline {
                         # Generate final YAML with substitutions
                         envsubst < infra/containerapps/ew-analytics-service.yml > deploy-analytics.yml
 
+                        # --- DEBUG START ---
+                        echo "===== Generated YAML ====="
+                        sed -n '1,200p' deploy-analytics.yml
+                        echo "=========================="
+
+                        test -s deploy-analytics.yml || {
+                          echo "❌ deploy-analytics.yml is empty"
+                          exit 1
+                        }
+
+                        echo "🔍 CHECKING VARIABLES:"
+                        echo "SUB_ID: '${SUB_ID}'"
+                        echo "LOCATION: '${LOCATION}'"
+                        echo "FULL_IMAGE_NAME: '${FULL_IMAGE_NAME}'"
+                        echo "ENVIRONMENT_NAME": '${ENVIRONMENT_NAME}'""
+
+                        echo "📄 CHECKING GENERATED YAML:"
+                        # Use cat -e to show hidden characters (like tabs vs spaces)
+                        cat -e deploy-analytics.yml
+                        # --- DEBUG END ---
+
                         # Deploy using YAML
                         az containerapp create \
                             --name analytics-service \
                             --resource-group $RESOURCE_GROUP \
+                            --environment $ENVIRONMENT_NAME \
                             --yaml deploy-analytics.yml
 
                         echo "✅ analytics-service deployed with full configuration"
