@@ -16,6 +16,14 @@ info:
 servers:
   - url: http://localhost:8082
     description: Local development server
+  - url: https://emergencywatch.denizaltun.de
+    description: Custom Azure API Management gateway
+  - url: https://emergencywatch-api.denizaltun.de
+    description: Azure API Management gateway
+    variables:
+      apim-instance:
+        default: emergencywatch-apim
+        description: Your Azure APIM instance name
 
 tags:
   - name: Fleet Analytics
@@ -26,6 +34,8 @@ tags:
     description: Aggregated historical metrics from DB
   - name: Admin
     description: Administrative operations
+  - name: Health
+    description: Health and readiness probes
 
 paths:
   /api/analytics/fleet:
@@ -93,7 +103,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/VehicleAnalyticsResponse"
         "404":
-          description: Vehicle not found
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/analytics/vehicles/type/{type}:
     get:
@@ -157,7 +169,7 @@ paths:
           schema:
             type: string
             format: date
-          example: "2025-12-01"
+          example: "2026-01-06"
         - name: to
           in: query
           required: true
@@ -165,7 +177,7 @@ paths:
           schema:
             type: string
             format: date
-          example: "2025-12-28"
+          example: "2026-01-13"
       responses:
         "200":
           description: Successfully retrieved historical metrics
@@ -173,6 +185,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HistoricalMetricsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/analytics/admin/aggregate/{date}:
     post:
@@ -188,7 +204,7 @@ paths:
           schema:
             type: string
             format: date
-          example: "2025-12-28"
+          example: "2026-01-13"
       responses:
         "200":
           description: Aggregation triggered successfully
@@ -196,7 +212,7 @@ paths:
             text/plain:
               schema:
                 type: string
-              example: "Aggregation triggered for 2025-12-28"
+              example: "Aggregation triggered for 2026-01-13"
 
   /api/analytics/telemetry/latest:
     get:
@@ -213,6 +229,92 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/VehicleTelemetry"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+        "503":
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: DOWN
+
+  /actuator/health/readiness:
+    get:
+      summary: Readiness probe
+      description: Kubernetes readiness probe endpoint
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is ready to accept traffic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+        "503":
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: DOWN
+
+  /actuator/health/liveness:
+    get:
+      summary: Liveness probe
+      description: Kubernetes liveness probe endpoint
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+        "503":
+          description: Service is not alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: DOWN
 
 components:
   schemas:
@@ -228,7 +330,7 @@ components:
       type: string
       enum:
         - IDLE
-        - RESPONDING
+        - EN_ROUTE
         - ON_SCENE
         - RETURNING
       description: Current operational status of vehicle
@@ -305,61 +407,173 @@ components:
     HistoricalMetricsResponse:
       type: object
       properties:
-        fleetMetrics:
+        fromDate:
+          type: string
+          format: date
+          description: Start date of the range
+          example: "2026-01-06"
+        toDate:
+          type: string
+          format: date
+          description: End date of the range
+          example: "2026-01-13"
+        totalDays:
+          type: integer
+          description: Total number of days in the date range (inclusive)
+          example: 8
+        daysWithData:
+          type: integer
+          description: Number of days that have actual data in the database
+          example: 2
+        averageFleetSpeed:
+          type: number
+          format: double
+          description: Average fleet speed across all days with data (km/h)
+          example: 45.5
+        totalFuelConsumed:
+          type: number
+          format: double
+          description: Total fuel consumed across all days (liters)
+          example: 890.25
+        totalDataPoints:
+          type: integer
+          description: Total number of telemetry data points
+          example: 1250
+        dailyFleetMetrics:
           type: array
           items:
             $ref: "#/components/schemas/DailyFleetMetrics"
-        vehicleMetrics:
+          description: Daily aggregated fleet metrics (includes empty entries for missing dates)
+        dailyVehicleMetrics:
           type: array
           items:
             $ref: "#/components/schemas/DailyVehicleMetrics"
+          description: Daily per-vehicle metrics
+        vehicleFuelConsumption:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehicleFuelConsumption"
+          description: Total fuel consumption per vehicle for the date range
 
     DailyFleetMetrics:
       type: object
       properties:
         id:
           type: string
+          description: Unique identifier
         date:
           type: string
           format: date
+          description: Date of the metrics
+          example: "2026-01-13"
         totalVehicles:
           type: integer
-        averageSpeed:
+          description: Number of vehicles tracked on this date
+          example: 5
+        fleetAverageSpeed:
           type: number
           format: double
+          nullable: true
+          description: Average speed across all vehicles (km/h), null if no data
+          example: 45.5
         totalFuelConsumed:
           type: number
           format: double
+          nullable: true
+          description: Total fuel consumed (liters), null if no data
+          example: 125.5
+        averageSpeedByStatus:
+          type: object
+          additionalProperties:
+            type: number
+          description: Average speed grouped by vehicle status
+          example:
+            IDLE: 0.0
+            EN_ROUTE: 65.5
+            ON_SCENE: 5.2
+            RETURNING: 55.0
+        averageSpeedByType:
+          type: object
+          additionalProperties:
+            type: number
+          description: Average speed grouped by vehicle type
+          example:
+            FIRE_TRUCK: 42.3
+            AMBULANCE: 48.7
+            POLICE: 55.2
 
     DailyVehicleMetrics:
       type: object
       properties:
         id:
           type: string
+          description: Unique identifier
         vehicleId:
           type: string
+          description: Vehicle identifier
+          example: "FIRE-001"
         date:
           type: string
           format: date
+          description: Date of the metrics
+          example: "2026-01-13"
+        vehicleStatus:
+          $ref: "#/components/schemas/VehicleStatus"
         vehicleType:
-          type: string
+          $ref: "#/components/schemas/VehicleType"
         averageSpeed:
           type: number
           format: double
+          description: Average speed for this vehicle on this date (km/h)
+          example: 42.5
         maxSpeed:
           type: number
           format: double
+          description: Maximum speed recorded (km/h)
+          example: 85.0
         minSpeed:
           type: number
           format: double
-        averageFuel:
+          description: Minimum speed recorded (km/h)
+          example: 0.0
+        averageFuelLevel:
           type: number
           format: double
-        minFuel:
+          description: Average fuel level percentage (0-100)
+          example: 65.5
+        minFuelLevel:
           type: number
           format: double
-        dataPoints:
+          description: Minimum fuel level percentage (0-100)
+          example: 45.0
+        fuelConsumed:
+          type: number
+          format: double
+          nullable: true
+          description: Estimated fuel consumed on this date (liters)
+          example: 25.5
+        totalTelemetryPoints:
           type: integer
+          description: Number of telemetry data points for this vehicle on this date
+          example: 250
+
+    VehicleFuelConsumption:
+      type: object
+      description: Total fuel consumption for a vehicle over the date range
+      properties:
+        vehicleId:
+          type: string
+          description: Vehicle identifier
+          example: "FIRE-001"
+        vehicleType:
+          type: string
+          description: Type of vehicle
+          example: "FIRE_TRUCK"
+        totalConsumed:
+          type: number
+          format: double
+          description: Total fuel consumed over the date range (liters)
+          example: 125.5
 
     VehicleTelemetry:
       type: object
@@ -419,3 +633,80 @@ components:
           type: string
           format: date-time
           description: When the record was created in the database
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              status:
+                type: integer
+                example: 400
+              error:
+                type: string
+                example: Bad Request
+              message:
+                type: string
+              path:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              status:
+                type: integer
+                example: 404
+              error:
+                type: string
+                example: Not Found
+              message:
+                type: string
+              path:
+                type: string
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              status:
+                type: integer
+                example: 500
+              error:
+                type: string
+                example: Internal Server Error
+              message:
+                type: string
+              path:
+                type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Ocp-Apim-Subscription-Key
+      description: Azure API Management subscription key
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication (optional for future use)
