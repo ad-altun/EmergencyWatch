@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -230,14 +231,23 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public HistoricalMetricsResponse getHistoricalMetrics(LocalDate from, LocalDate to) {
 
-        // 1. Fetch Pre-Calculated Data
-        List<DailyFleetMetrics> fleetMetrics =
+        // 1. Fetch Pre-Calculated Data from DB
+        List<DailyFleetMetrics> fleetMetricsFromDb =
                 fleetMetricsRepository.findByDateBetweenOrderByDateAsc(from, to);
 
         List<DailyVehicleMetrics> vehicleMetrics =
                 vehicleMetricsRepository.findByDateBetweenOrderByVehicleIdAsc(from, to);
 
-        // 2. Aggregate vehicle fuel consumption from daily metrics
+        // 2. Create a map of existing fleet metrics by date for quick lookup
+        Map<LocalDate, DailyFleetMetrics> fleetMetricsMap = fleetMetricsFromDb.stream()
+                .collect(Collectors.toMap(DailyFleetMetrics::getDate, m -> m));
+
+        // 3. Generate all dates in the range and fill missing dates with empty records
+        List<DailyFleetMetrics> fleetMetrics = from.datesUntil(to.plusDays(1))
+                .map(date -> fleetMetricsMap.getOrDefault(date, createEmptyFleetMetrics(date)))
+                .collect(Collectors.toList());
+
+        // 4. Aggregate vehicle fuel consumption from daily metrics
         List<VehicleFuelConsumption> fuelConsumption = vehicleMetrics.stream()
                 .collect(Collectors.groupingBy(DailyVehicleMetrics::getVehicleId))
                 .entrySet().stream()
@@ -251,14 +261,14 @@ public class AnalyticsService {
                 ))
                 .toList();
 
-        // Calculate summary statistics
-        Double avgSpeed = fleetMetrics.stream()
+        // Calculate summary statistics (only from days with actual data)
+        Double avgSpeed = fleetMetricsFromDb.stream()
                 .filter(m -> m.getFleetAverageSpeed() != null)
                 .mapToDouble(DailyFleetMetrics::getFleetAverageSpeed)
                 .average()
                 .orElse(0.0);
 
-        Double totalFuel = fleetMetrics.stream()
+        Double totalFuel = fleetMetricsFromDb.stream()
                 .filter(m -> m.getTotalFuelConsumed() != null)
                 .mapToDouble(DailyFleetMetrics::getTotalFuelConsumed)
                 .sum();
@@ -268,10 +278,14 @@ public class AnalyticsService {
                 .mapToInt(DailyVehicleMetrics::getTotalTelemetryPoints)
                 .sum();
 
+        // Calculate actual days in the date range (inclusive)
+        long daysBetween = ChronoUnit.DAYS.between(from, to) + 1;
+
         return HistoricalMetricsResponse.builder()
                 .fromDate(from)
                 .toDate(to)
-                .totalDays(fleetMetrics.size())
+                .totalDays((int) daysBetween)
+                .daysWithData(fleetMetricsFromDb.size())
                 .averageFleetSpeed(avgSpeed)
                 .totalFuelConsumed(totalFuel)
                 .totalDataPoints(totalPoints)
@@ -279,5 +293,18 @@ public class AnalyticsService {
                 .dailyVehicleMetrics(vehicleMetrics)
                 .vehicleFuelConsumption(fuelConsumption)
                 .build();
+    }
+
+    /**
+     * Create an empty DailyFleetMetrics entry for a date with no data.
+     * This ensures the chart shows all dates in the range with gaps where data is missing.
+     */
+    private DailyFleetMetrics createEmptyFleetMetrics(LocalDate date) {
+        DailyFleetMetrics empty = new DailyFleetMetrics();
+        empty.setDate(date);
+        empty.setTotalVehicles(0);
+        empty.setFleetAverageSpeed(null);
+        empty.setTotalFuelConsumed(null);
+        return empty;
     }
 }

@@ -20,6 +20,7 @@ public class HistoricalMetricsResponse {
     private LocalDate toDate;
 
     private Integer totalDays;
+    private Integer daysWithData;
 
     // Fleet-level summary
     private Double averageFleetSpeed;
