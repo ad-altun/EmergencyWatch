@@ -417,7 +417,7 @@ pipeline {
                             --name analytics-service \
                             --resource-group $RESOURCE_GROUP \
                             --environment $ENVIRONMENT_NAME \
-                            --mi-system-assigned \
+                            --system-assigned \
                             --yaml deploy-analytics.yml
 
                         echo "✅ analytics-service deployed with full configuration"
