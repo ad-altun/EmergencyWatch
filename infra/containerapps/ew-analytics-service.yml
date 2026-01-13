@@ -2,65 +2,71 @@ name: analytics-service
 type: Microsoft.App/containerApps
 location: ${LOCATION}
 
+identity:
+  type: SystemAssigned
+
+environmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+
 properties:
   managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
 
-configuration:
-  ingress:
-    external: true
-    targetPort: 8082
-    transport: auto
-    traffic:
-      - latestRevision: true
-        weight: 100
+  configuration:
+    activeRevisionsMode: Single
+    ingress:
+      external: true
+      targetPort: 8082
+      transport: auto
+      traffic:
+        -weight: 100
 
-  registries:
-    - server: ${ACR_NAME}.azurecr.io
-      identity: system
+    registries:
+      - server: ${ACR_NAME}.azurecr.io
+        identity: system
 
-template:
-  containers:
-    - name: analytics-service
-      image: ${FULL_IMAGE_NAME}
+  template:
+    containers:
+      - name: analytics-service
+        image: ${FULL_IMAGE_NAME}
 
-      resources:
-        cpu: 0.5
-        memory: 1Gi
+        resources:
+          cpu: 0.5
+          memory: 1Gi
 
-      env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: prod
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: prod
 
-      probes:
-        - type: Startup
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8082
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          failureThreshold: 24
+        probes:
+          - type: Startup
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 24
 
-        - type: Readiness
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8082
-          periodSeconds: 20
-          timeoutSeconds: 5
-          failureThreshold: 3
+          - type: Readiness
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-        - type: Liveness
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8082
-          periodSeconds: 20
-          timeoutSeconds: 5
-          failureThreshold: 3
+          - type: Liveness
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-  scale:
-    minReplicas: 0
-    maxReplicas: 1
-    rules:
-      - name: http-scale
-        http:
-          metadata:
-            concurrentRequests: "50"
+    scale:
+      minReplicas: 0
+      maxReplicas: 1
+      rules:
+        - name: http-scale
+          custom:
+            type: http
+            metadata:
+              concurrentRequests: "50"
