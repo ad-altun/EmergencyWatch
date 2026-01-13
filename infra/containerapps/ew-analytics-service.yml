@@ -1,57 +1,87 @@
+identity:
+  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+  type: SystemAssigned
 properties:
-  environmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
   configuration:
-    activeRevisionsMode: Single
     ingress:
       external: true
       targetPort: 8082
       transport: auto
       traffic:
-        - weight: 100
+      - weight: 100
     registries:
-      - server: ${ACR_NAME}.azurecr.io
-        identity: system
+    - server: ${ACR_NAME}.azurecr.io
+      identity: SystemAssigned
+    secrets:
+    - name: spring-datasource-url
+      value: "${SPRING_DATASOURCE_URL}"
+    - name: spring-datasource-username
+      value: "${SPRING_DATASOURCE_USERNAME}"
+    - name: spring-datasource-password
+      value: "${SPRING_DATASOURCE_PASSWORD}"
+    - name: eventhub-connection-string
+      value: "${AZURE_EVENTHUBS_CONNECTION_STRING}"
+    - name: eventhub-sasl-config
+      value: "${SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG}"
   template:
     containers:
-      - image: ${FULL_IMAGE_NAME}
-        name: analytics-service
-        resources:
-          cpu: 0.5
-          memory: 1Gi
-        probes:
-          - type: Startup
-            httpGet:
-              path: "/actuator/health/readiness"
-              port: 8082
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 24
-          - type: Readiness
-            httpGet:
-              path: "/actuator/health/readiness"
-              port: 8082
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-          - type: Liveness
-            httpGet:
-              path: "/actuator/health/liveness"
-              port: 8082
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-        env:
-          - name: "SPRING_PROFILES_ACTIVE"
-            value: "prod"
+    - image: ${FULL_IMAGE_NAME}
+      name: analytics-service
+      resources:
+        cpu: 0.5
+        memory: 1Gi
+      probes:
+      - type: Startup
+        httpGet:
+          path: "/actuator/health/readiness"
+          port: 8082
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        failureThreshold: 24
+      - type: Readiness
+        httpGet:
+          path: "/actuator/health/readiness"
+          port: 8082
+        periodSeconds: 20
+        timeoutSeconds: 5
+        failureThreshold: 3
+      - type: Liveness
+        httpGet:
+          path: "/actuator/health/liveness"
+          port: 8082
+        periodSeconds: 20
+        timeoutSeconds: 5
+        failureThreshold: 3
+      env:
+      - name: "SPRING_PROFILES_ACTIVE"
+        value: "prod"
+      # --- Database ---
+      - name: "SPRING_DATASOURCE_URL"
+        secretRef: spring-datasource-url
+      - name: "SPRING_DATASOURCE_USERNAME"
+        secretRef: spring-datasource-username
+      - name: "SPRING_DATASOURCE_PASSWORD"
+        secretRef: spring-datasource-password
+      # Kafka / Event hubs
+      - name: "SPRING_KAFKA_BOOTSTRAP_SERVERS"
+        value: "${SPRING_KAFKA_BOOTSTRAP_SERVERS}"
+      # standard event hub configs
+      - name: "SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL"
+        value: "SASL_SSL"
+      - name: "SPRING_KAFKA_PROPERTIES_SASL_MECHANISM"
+        value: "PLAIN"
+      - name: "AZURE_EVENTHUBS_NAMESPACE"
+        value: "${AZURE_EVENTHUBS_NAMESPACE}"
+      - name: "SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG"
+        secretRef: eventhub-sasl-config
+      - name: "AZURE_EVENTHUBS_CONNECTION_STRING"
+        secretRef: eventhub-connection-string
     scale:
       minReplicas: 0
       maxReplicas: 1
       rules:
-        - name: http-scale
-          http:
-            metadata:
-              concurrentRequests: '50'
-
-
-
-
+      - name: http-scale
+        http:
+          metadata:
+            concurrentRequests: '50'
