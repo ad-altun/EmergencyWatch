@@ -16,13 +16,13 @@ properties:
         image: ${ACR_NAME}.azurecr.io/emergencywatch/vehicle-simulator:latest
 
         resources:
-          cpu: 0.25
-          memory: 0.5Gi
+          cpu: 0.5
+          memory: 1Gi
 
         env:
           - name: SPRING_PROFILES_ACTIVE
             value: prod
 
     scale:
-      minReplicas: 1
+      minReplicas: 0
       maxReplicas: 1
