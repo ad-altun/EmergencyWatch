@@ -11,7 +11,7 @@ interface StatsCardGridProps {
     criticalAlerts: number;
     warningAlerts: number;
     avgSpeed: number;
-    avgResponseTime: number;
+    // avgResponseTime: number;
     avgFuel: number;
     statusCounts: Record<VehicleStatus, number>;
 }
@@ -23,15 +23,15 @@ export function StatsCardGrid({
     criticalAlerts,
     warningAlerts,
     avgSpeed,
-    avgResponseTime,
+    // avgResponseTime,
     avgFuel,
     statusCounts,
 }: StatsCardGridProps) {
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <VehiclesCard available={availableVehicles} total={totalVehicles} />
             <AlertsCard total={totalAlerts} critical={criticalAlerts} warning={warningAlerts} />
-            <AveragesCard avgSpeed={avgSpeed} avgResponseTime={avgResponseTime} avgFuel={avgFuel} />
+            <AveragesCard avgSpeed={avgSpeed} avgFuel={avgFuel} />
             <StatusOverviewCard statusCounts={statusCounts} />
         </div>
     );

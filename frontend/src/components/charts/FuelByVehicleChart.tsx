@@ -17,48 +17,34 @@ export function FuelByVehicleChart({ data }: FuelByVehicleChartProps) {
     // Defensive: Ensure data is always an array
     const safeData = Array.isArray(data) ? data : [];
 
-    // Group by vehicle and calculate total consumption
-    // const vehicleConsumption = safeData.reduce((acc, metric) => {
-    //     const vehicleId = metric.vehicleId;
-    //     if (!acc[vehicleId]) {
-    //         acc[vehicleId] = {
-    //             vehicleId,
-    //             vehicleType: metric.vehicleType,
-    //             totalConsumption: 0,
-    //             dataPoints: 0
-    //         };
-    //     }
-    //
-    //     // Calculate fuel consumed based on vehicle type tank capacity
-    //     const tankCapacity = metric.vehicleType === 'FIRE_TRUCK' ? 200
-    //         : metric.vehicleType === 'AMBULANCE' ? 80
-    //             : 60; // POLICE
-    //
-    //     // Estimate consumption from average fuel level drop
-    //     const consumedPercentage = 100 - (metric.averageFuelLevel || 0);
-    //     const consumedLiters = (consumedPercentage / 100) * tankCapacity;
-    //
-    //     acc[vehicleId].totalConsumption += consumedLiters;
-    //     acc[vehicleId].dataPoints++;
-    //
-    //     return acc;
-    // }, {} as Record<string, { vehicleId: string; vehicleType: string; totalConsumption: number; dataPoints: number }>);
+    // Color palette
+    const colors = [
+        "rgba(59, 130, 246, 0.8)",   // Blue
+        "rgba(34, 197, 94, 0.8)",    // Green
+        "rgba(239, 68, 68, 0.8)",    // Red
+        "rgba(168, 85, 247, 0.8)",   // Purple
+        "rgba(249, 115, 22, 0.8)",   // Orange
+    ];
 
-    // const vehicles = Object.values(vehicleConsumption);
+    // Get all unique vehicle IDs and sort alphabetically for consistent color mapping
+    const allVehicleIds = [...new Set(safeData.map(d => d.vehicleId))].sort();
+
+    // Create color map based on alphabetical order
+    const vehicleColorMap = allVehicleIds.reduce((acc, vehicleId, index) => {
+        acc[vehicleId] = colors[index % colors.length];
+        return acc;
+    }, {} as Record<string, string>);
+
     const chartData = {
-        // labels: safeData.map(d => d.vehicleId),
-        labels: [...new Set(safeData.map(d => d.vehicleId))],
+        labels: allVehicleIds,
         datasets: [
             {
                 label: "Fuel Consumed (L)",
-                data: safeData.map(v => v.totalConsumed),
-                backgroundColor: [
-                    "rgba(59, 130, 246, 0.8)",   // Blue
-                    "rgba(34, 197, 94, 0.8)",    // Green
-                    "rgba(239, 68, 68, 0.8)",    // Red
-                    "rgba(168, 85, 247, 0.8)",   // Purple
-                    "rgba(249, 115, 22, 0.8)",   // Orange
-                ],
+                data: allVehicleIds.map(vehicleId => {
+                    const vehicle = safeData.find(v => v.vehicleId === vehicleId);
+                    return vehicle ? vehicle.totalConsumed : 0;
+                }),
+                backgroundColor: allVehicleIds.map(vehicleId => vehicleColorMap[vehicleId]),
                 borderColor: "#1e293b",
                 borderWidth: 2,
             },

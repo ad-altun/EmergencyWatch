@@ -28,17 +28,17 @@ interface SpeedTrendChartProps {
 export function SpeedTrendChart({ data }: SpeedTrendChartProps) {
     // Defensive: Ensure data is always an array
     const safeData = Array.isArray(data) ? data : [];
-    const validData = safeData.filter(d => d.fleetAverageSpeed !== null);
 
     const chartData = {
-        labels: validData.map(d => d.date),
+        labels: safeData.map(d => d.date),
         datasets: [
             {
                 label: "Fleet Average Speed (km/h)",
-                data: validData.map(d => d.fleetAverageSpeed),
+                data: safeData.map(d => d.fleetAverageSpeed),
                 borderColor: "rgb(59, 130, 246)",
                 backgroundColor: "rgba(59, 130, 246, 0.5)",
                 tension: 0.3,
+                spanGaps: false, // Show gaps where data is missing
             },
         ],
     };
@@ -50,10 +50,21 @@ export function SpeedTrendChart({ data }: SpeedTrendChartProps) {
             legend: {
                 labels: { color: "#94a3b8" },
             },
+            tooltip: {
+                callbacks: {
+                    title: function(context: any) {
+                        return context[0].label;
+                    }
+                }
+            }
         },
         scales: {
             x: {
-                ticks: { color: "#94a3b8" },
+                ticks: {
+                    color: "#94a3b8",
+                    maxRotation: 45,
+                    minRotation: 45,
+                },
                 grid: { color: "#334155" },
             },
             y: {

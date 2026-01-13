@@ -1,4 +1,4 @@
-import { Menu, Bell, AlertTriangle } from "lucide-react";
+import { Menu, AlertTriangle } from "lucide-react";
 
 interface HeaderProps {
     onMenuClick: () => void;
@@ -34,13 +34,13 @@ export function Header( { onMenuClick }: HeaderProps ) {
                     <span className="text-slate-400 hidden sm:inline">Connected</span>
                 </div>
 
-                <button className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                    <Bell size={ 20 } className="text-slate-400"/>
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-xs
-                    flex items-center justify-center text-white font-medium">
-            3
-          </span>
-                </button>
+          {/*      <button className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">*/}
+          {/*          <Bell size={ 20 } className="text-slate-400"/>*/}
+          {/*          <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-xs*/}
+          {/*          flex items-center justify-center text-white font-medium">*/}
+          {/*  3*/}
+          {/*</span>*/}
+          {/*      </button>*/}
             </div>
         </header>
     );

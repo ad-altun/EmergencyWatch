@@ -44,6 +44,7 @@ export interface HistoricalMetricsResponse {
     fromDate: string;
     toDate: string;
     totalDays: number;
+    daysWithData: number;
     averageFleetSpeed: number;
     totalFuelConsumed: number;
     totalDataPoints: number;
