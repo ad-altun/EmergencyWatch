@@ -1,15 +1,8 @@
 name: analytics-service
-type: Microsoft.App/containerApps
-location: ${LOCATION}
 
-identity:
-  type: SystemAssigned
-
-environmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
 
 properties:
-  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
-
   configuration:
     activeRevisionsMode: Single
     ingress:
@@ -17,11 +10,11 @@ properties:
       targetPort: 8082
       transport: auto
       traffic:
-        -weight: 100
+        - weight: 100
 
     registries:
       - server: ${ACR_NAME}.azurecr.io
-        identity: system
+        identity: SystemAssigned
 
   template:
     containers:
@@ -66,7 +59,6 @@ properties:
       maxReplicas: 1
       rules:
         - name: http-scale
-          custom:
-            type: http
+          http:
             metadata:
               concurrentRequests: "50"
