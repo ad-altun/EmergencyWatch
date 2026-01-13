@@ -13,7 +13,7 @@ properties:
   template:
     containers:
       - name: vehicle-simulator
-        image: ${ACR_NAME}.azurecr.io/emergencywatch/vehicle-simulator:latest
+        image: ${FULL_IMAGE_NAME}
 
         resources:
           cpu: 0.5

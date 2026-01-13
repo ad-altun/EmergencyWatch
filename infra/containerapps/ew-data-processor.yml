@@ -13,7 +13,7 @@ properties:
   template:
     containers:
       - name: data-processor
-        image: ${ACR_NAME}.azurecr.io/emergencywatch/data-processor:latest
+        image: ${FULL_IMAGE_NAME}
 
         resources:
           cpu: 0.5

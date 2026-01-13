@@ -7,8 +7,9 @@ properties:
 
   configuration:
     ingress:
-      external: false
+      external: true
       targetPort: 8083
+      transport: auto
       traffic:
         - latestRevision: true
           weight: 100
@@ -20,7 +21,7 @@ properties:
   template:
     containers:
       - name: notification-service
-        image: ${ACR_NAME}.azurecr.io/emergencywatch/notification-service:latest
+        image: ${FULL_IMAGE_NAME}
 
         resources:
           cpu: 0.5
@@ -31,11 +32,19 @@ properties:
             value: prod
 
         probes:
+          - type: Startup
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 5  # Start checking almost immediately
+            periodSeconds: 10       # checks every 10 seconds
+            failureThreshold: 24    # for a total of 240 seconds (4 minutes)
+
           - type: Readiness
             httpGet:
               path: /actuator/health/readiness
               port: 8083
-            initialDelaySeconds: 60
+            # initialDelaySeconds: 60
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
@@ -44,7 +53,7 @@ properties:
             httpGet:
               path: /actuator/health/liveness
               port: 8083
-            initialDelaySeconds: 60
+            # initialDelaySeconds: 60
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3

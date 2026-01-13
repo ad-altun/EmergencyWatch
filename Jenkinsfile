@@ -24,6 +24,7 @@ pipeline {
         AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
 
         // Azure Resources
+        LOCATION             = 'germanywestcentral'
         RESOURCE_GROUP       = 'emergencywatch-rg'
         ACR_NAME             = 'emergencywatchacr'
         ACR_LOGIN_SERVER     = "${ACR_NAME}.azurecr.io"
@@ -298,53 +299,28 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     sh '''
-                        deploy_containerapp() {
-                            local APP_NAME=$1
-                            local IMAGE=$2
+                        # Setup variables for YAML substitution
+                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
+                        export LOCATION="$LOCATION"
+                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                        export RESOURCE_GROUP="$RESOURCE_GROUP"
+                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                        export ACR_NAME="$ACR_NAME"
 
-                            echo "========================================"
-                            echo "Deploying $APP_NAME with image $IMAGE"
-                            echo "========================================"
+                        echo "================================================"
+                        echo "Deploying vehicle-simulator: $FULL_IMAGE_NAME"
+                        echo "================================================"
 
-                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
-                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
-                                echo "Current state: $CURRENT_STATE"
+                        # Generate final YAML with substitutions
+                        envsubst < infra/containerapps/ew-vehicle-simulator.yml > deploy-simulator.yml
 
-                                if [ "$CURRENT_STATE" = "Failed" ]; then
-                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
-                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
-                                    sleep 20
-                                    timeout 300s az containerapp create \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --environment $CONTAINER_ENV \
-                                        --image $IMAGE \
-                                        --registry-server $ACR_LOGIN_SERVER \
-                                        --registry-identity system \
-                                        --cpu 0.5 --memory 1Gi \
-                                        --min-replicas 0 --max-replicas 1
-                                else
-                                    timeout 300s az containerapp update \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --image $IMAGE \
-                                        --cpu 0.5 --memory 1Gi
-                                fi
-                            else
-                                timeout 300s az containerapp create \
-                                    --name $APP_NAME \
-                                    --resource-group $RESOURCE_GROUP \
-                                    --environment $CONTAINER_ENV \
-                                    --image $IMAGE \
-                                    --registry-server $ACR_LOGIN_SERVER \
-                                    --registry-identity system \
-                                    --cpu 0.5 --memory 1Gi \
-                                    --min-replicas 0 --max-replicas 1
-                            fi
-                            echo "✅ $APP_NAME deployed"
-                        }
+                        # Deploy using YAML
+                        az containerapp create \
+                            --name vehicle-simulator \
+                            --resource-group $RESOURCE_GROUP \
+                            --yaml deploy-simulator.yml
 
-                        deploy_containerapp "vehicle-simulator" "$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
+                        echo "✅ vehicle-simulator deployed with full configuration"
                     '''
                 }
             }
@@ -357,53 +333,28 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     sh '''
-                        deploy_containerapp() {
-                            local APP_NAME=$1
-                            local IMAGE=$2
+                        # Setup variables for YAML substitution
+                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
+                        export LOCATION="$LOCATION"
+                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                        export RESOURCE_GROUP="$RESOURCE_GROUP"
+                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                        export ACR_NAME="$ACR_NAME"
 
-                            echo "========================================"
-                            echo "Deploying $APP_NAME with image $IMAGE"
-                            echo "========================================"
+                        echo "================================================"
+                        echo "Deploying data-processor: $FULL_IMAGE_NAME"
+                        echo "================================================"
 
-                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
-                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
-                                echo "Current state: $CURRENT_STATE"
+                        # Generate final YAML with substitutions
+                        envsubst < infra/containerapps/ew-data-processor.yml > deploy-processor.yml
 
-                                if [ "$CURRENT_STATE" = "Failed" ]; then
-                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
-                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
-                                    sleep 20
-                                    timeout 300s az containerapp create \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --environment $CONTAINER_ENV \
-                                        --image $IMAGE \
-                                        --registry-server $ACR_LOGIN_SERVER \
-                                        --registry-identity system \
-                                        --cpu 0.5 --memory 1Gi \
-                                        --min-replicas 0 --max-replicas 1
-                                else
-                                    timeout 300s az containerapp update \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --image $IMAGE \
-                                        --cpu 0.5 --memory 1Gi
-                                fi
-                            else
-                                timeout 300s az containerapp create \
-                                    --name $APP_NAME \
-                                    --resource-group $RESOURCE_GROUP \
-                                    --environment $CONTAINER_ENV \
-                                    --image $IMAGE \
-                                    --registry-server $ACR_LOGIN_SERVER \
-                                    --registry-identity system \
-                                    --cpu 0.5 --memory 1Gi \
-                                    --min-replicas 0 --max-replicas 1
-                            fi
-                            echo "✅ $APP_NAME deployed"
-                        }
+                        # Deploy using YAML
+                        az containerapp create \
+                            --name data-processor \
+                            --resource-group $RESOURCE_GROUP \
+                            --yaml deploy-processor.yml
 
-                        deploy_containerapp "data-processor" "$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
+                        echo "✅ data-processor deployed with full configuration"
                     '''
                 }
             }
@@ -416,53 +367,28 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     sh '''
-                        deploy_containerapp() {
-                            local APP_NAME=$1
-                            local IMAGE=$2
+                        # Setup variables for YAML substitution
+                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
+                        export LOCATION="$LOCATION"
+                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                        export RESOURCE_GROUP="$RESOURCE_GROUP"
+                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                        export ACR_NAME="$ACR_NAME"
 
-                            echo "========================================"
-                            echo "Deploying $APP_NAME with image $IMAGE"
-                            echo "========================================"
+                        echo "================================================"
+                        echo "Deploying analytics-service: $FULL_IMAGE_NAME"
+                        echo "================================================"
 
-                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
-                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
-                                echo "Current state: $CURRENT_STATE"
+                        # Generate final YAML with substitutions
+                        envsubst < infra/containerapps/ew-analytics-service.yml > deploy-analytics.yml
 
-                                if [ "$CURRENT_STATE" = "Failed" ]; then
-                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
-                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
-                                    sleep 20
-                                    timeout 300s az containerapp create \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --environment $CONTAINER_ENV \
-                                        --image $IMAGE \
-                                        --registry-server $ACR_LOGIN_SERVER \
-                                        --registry-identity system \
-                                        --cpu 0.5 --memory 1Gi \
-                                        --min-replicas 0 --max-replicas 1
-                                else
-                                    timeout 300s az containerapp update \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --image $IMAGE \
-                                        --cpu 0.5 --memory 1Gi
-                                fi
-                            else
-                                timeout 300s az containerapp create \
-                                    --name $APP_NAME \
-                                    --resource-group $RESOURCE_GROUP \
-                                    --environment $CONTAINER_ENV \
-                                    --image $IMAGE \
-                                    --registry-server $ACR_LOGIN_SERVER \
-                                    --registry-identity system \
-                                    --cpu 0.5 --memory 1Gi \
-                                    --min-replicas 0 --max-replicas 1
-                            fi
-                            echo "✅ $APP_NAME deployed"
-                        }
+                        # Deploy using YAML
+                        az containerapp create \
+                            --name analytics-service \
+                            --resource-group $RESOURCE_GROUP \
+                            --yaml deploy-analytics.yml
 
-                        deploy_containerapp "analytics-service" "$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
+                        echo "✅ analytics-service deployed with full configuration"
                     '''
                 }
             }
@@ -475,53 +401,28 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     sh '''
-                        deploy_containerapp() {
-                            local APP_NAME=$1
-                            local IMAGE=$2
+                        # Setup variables for YAML substitution
+                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
+                        export LOCATION="$LOCATION"
+                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                        export RESOURCE_GROUP="$RESOURCE_GROUP"
+                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                        export ACR_NAME="$ACR_NAME"
 
-                            echo "========================================"
-                            echo "Deploying $APP_NAME with image $IMAGE"
-                            echo "========================================"
+                        echo "================================================"
+                        echo "Deploying notification-service: $FULL_IMAGE_NAME"
+                        echo "================================================"
 
-                            if az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
-                                CURRENT_STATE=$(az containerapp show --name $APP_NAME --resource-group $RESOURCE_GROUP --query 'properties.provisioningState' -o tsv)
-                                echo "Current state: $CURRENT_STATE"
+                        # Generate final YAML with substitutions
+                        envsubst < infra/containerapps/ew-notification-service.yml > deploy-alerts.yml
 
-                                if [ "$CURRENT_STATE" = "Failed" ]; then
-                                    echo "⚠️  $APP_NAME is in Failed state, recreating..."
-                                    az containerapp delete --name $APP_NAME --resource-group $RESOURCE_GROUP --yes --no-wait
-                                    sleep 20
-                                    timeout 300s az containerapp create \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --environment $CONTAINER_ENV \
-                                        --image $IMAGE \
-                                        --registry-server $ACR_LOGIN_SERVER \
-                                        --registry-identity system \
-                                        --cpu 0.5 --memory 1Gi \
-                                        --min-replicas 0 --max-replicas 1
-                                else
-                                    timeout 300s az containerapp update \
-                                        --name $APP_NAME \
-                                        --resource-group $RESOURCE_GROUP \
-                                        --image $IMAGE \
-                                        --cpu 0.5 --memory 1Gi
-                                fi
-                            else
-                                timeout 300s az containerapp create \
-                                    --name $APP_NAME \
-                                    --resource-group $RESOURCE_GROUP \
-                                    --environment $CONTAINER_ENV \
-                                    --image $IMAGE \
-                                    --registry-server $ACR_LOGIN_SERVER \
-                                    --registry-identity system \
-                                    --cpu 0.5 --memory 1Gi \
-                                    --min-replicas 0 --max-replicas 1
-                            fi
-                            echo "✅ $APP_NAME deployed"
-                        }
+                        # Deploy using YAML
+                        az containerapp create \
+                            --name notification-service \
+                            --resource-group $RESOURCE_GROUP \
+                            --yaml deploy-alerts.yml
 
-                        deploy_containerapp "notification-service" "$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
+                        echo "✅ notification-service deployed with full configuration"
                     '''
                 }
             }
