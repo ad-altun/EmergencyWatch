@@ -55,12 +55,12 @@ export function SpeedByTypeChart({ data }: SpeedByTypeChartProps) {
         },
         scales: {
             x: {
-                ticks: { color: "#94a3b8" },
-                grid: { color: "#334155" },
+                ticks: { color: "#64748b" },
+                grid: { color: "#e2e8f0" },
             },
             y: {
-                ticks: { color: "#94a3b8" },
-                grid: { color: "#334155" },
+                ticks: { color: "#64748b" },
+                grid: { color: "#e2e8f0" },
                 beginAtZero: true,
             },
         },

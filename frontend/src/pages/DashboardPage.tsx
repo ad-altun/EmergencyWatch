@@ -20,8 +20,8 @@ export function DashboardPage() {
         return (
             <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                    <p className="text-red-400 font-semibold mb-2">Failed to load data</p>
-                    <p className="text-slate-400 text-sm">Please check if the server is active</p>
+                    <p className="text-red-600 font-semibold mb-2">Failed to load data</p>
+                    <p className="text-slate-600 text-sm">Please check if the server is active</p>
                 </div>
             </div>
         );
@@ -74,8 +74,8 @@ export function DashboardPage() {
         <div className="flex flex-col h-full gap-4 pb-0">
             {/* Header */}
             <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-white">Fleet Dashboard</h1>
-                <p className="text-slate-400 text-sm">Real-time fleet monitoring</p>
+                <h1 className="text-xl font-bold text-slate-900">Fleet Dashboard</h1>
+                <p className="text-slate-800 text-md">Real-time fleet monitoring</p>
             </div>
 
             {/* Stats Cards */}

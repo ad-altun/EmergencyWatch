@@ -91,17 +91,17 @@ export function SpeedByVehicleChart({ data }: SpeedByVehicleChartProps) {
         },
         scales: {
             x: {
-                grid: { color: "#334155" },
-                ticks: { color: "#94a3b8" },
+                grid: { color: "#e2e8f0" },
+                ticks: { color: "#64748b" },
                 title: {
                     display: true,
                     text: "Average Speed (km/h)",
-                    color: "#94a3b8",
+                    color: "#64748b",
                 },
             },
             y: {
                 grid: { display: false },
-                ticks: { color: "#94a3b8" },
+                ticks: { color: "#64748b" },
             },
         },
     };

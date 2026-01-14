@@ -16,19 +16,19 @@ const statusConfig: { key: VehicleStatus; label: string; color: string }[] = [
 
 export function StatusOverviewCard({ statusCounts }: StatusOverviewCardProps) {
     return (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 hover:border-slate-600 transition-colors">
+        <div className="bg-white border border-slate-200 rounded-lg p-3 hover:border-slate-300 transition-colors shadow-sm">
             <div className="flex items-center justify-between mb-2">
-                <span className="text-slate-400 text-xs font-medium">Status Overview</span>
-                <CircleDot size={14} className="text-emerald-400" />
+                <span className="text-slate-600 text-xs font-medium">Status Overview</span>
+                <CircleDot size={14} className="text-emerald-600" />
             </div>
             <div className="grid grid-cols-4 gap-1">
                 {statusConfig.map(({ key, label, color }) => (
                     <div key={key} className="text-center">
                         <div className="flex items-center justify-center gap-1">
                             <div className={`w-2 h-2 rounded-full ${color}`} />
-                            <span className="text-lg font-bold text-white">{statusCounts[key]}</span>
+                            <span className="text-lg font-bold text-slate-900">{statusCounts[key]}</span>
                         </div>
-                        <p className="text-slate-500 text-xs">{label}</p>
+                        <p className="text-slate-600 text-xs">{label}</p>
                     </div>
                 ))}
             </div>

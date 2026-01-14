@@ -25,21 +25,21 @@ export function VehicleListPanel( { vehicles }: VehicleListPanelProps ) {
     };
 
     return (
-        <div className="flex-1 min-h-[300px] lg:min-h-0 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col min-w-0">
-            <div className="flex items-center justify-between p-3 border-b border-slate-800 flex-shrink-0">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 bg-white border border-slate-200 rounded-xl flex flex-col min-w-0 shadow-sm">
+            <div className="flex items-center justify-between p-3 border-b border-slate-200 flex-shrink-0">
                 <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-white text-sm">Vehicles</h2>
-                    <span className="text-xs text-slate-500">
+                    <h2 className="font-semibold text-slate-900 text-sm">Vehicles</h2>
+                    <span className="text-xs text-slate-600">
                         { filteredVehicles.length }/{ safeVehicles.length }
                     </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Filter size={ 12 } className="text-slate-500"/>
+                    <Filter size={ 12 } className="text-slate-600"/>
                     <select
                         value={ statusFilter }
                         onChange={ ( e ) => setStatusFilter(e.target.value as VehicleStatus | "ALL") }
-                        className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:outline-none"
+                        className="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="ALL">All</option>
                         <option value="EN_ROUTE">En Route</option>
