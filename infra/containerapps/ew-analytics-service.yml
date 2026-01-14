@@ -60,7 +60,7 @@ properties:
         secretRef: spring-datasource-password
       # Kafka / Event hubs
       - name: "SPRING_KAFKA_BOOTSTRAP_SERVERS"
-        value: '${SPRING_KAFKA_BOOTSTRAP_SERVERS}'
+        value: "${SPRING_KAFKA_BOOTSTRAP_SERVERS}"
       # standard event hub configs
       - name: "SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL"
         value: "SASL_SSL"
