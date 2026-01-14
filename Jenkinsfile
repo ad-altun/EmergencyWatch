@@ -18,18 +18,21 @@ pipeline {
 
     environment {
         // Azure Service Principal
-        AZURE_CLIENT_ID     = credentials('AZURE_CLIENT_ID')
-        AZURE_CLIENT_SECRET = credentials('AZURE_CLIENT_SECRET')
-        AZURE_TENANT_ID     = credentials('AZURE_TENANT_ID')
-        AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+        AZURE_CLIENT_ID         = credentials('AZURE_CLIENT_ID')
+        AZURE_CLIENT_SECRET     = credentials('AZURE_CLIENT_SECRET')
+        AZURE_TENANT_ID         = credentials('AZURE_TENANT_ID')
+        AZURE_SUBSCRIPTION_ID   = credentials('AZURE_SUBSCRIPTION_ID')
 
         // Azure Resources
-        LOCATION             = 'germanywestcentral'
-        RESOURCE_GROUP       = 'emergencywatch-rg'
-        ACR_NAME             = 'emergencywatchacr'
-        ACR_LOGIN_SERVER     = "${ACR_NAME}.azurecr.io"
-        CONTAINER_ENV        = 'emergencywatch-env'
-        STORAGE_ACCOUNT      = 'emergencywatchfe'
+        LOCATION                        = 'germanywestcentral'
+        RESOURCE_GROUP                  = 'emergencywatch-rg'
+        ACR_NAME                        = 'emergencywatchacr'
+        ACR_LOGIN_SERVER                = "${ACR_NAME}.azurecr.io"
+        CONTAINER_ENV                   = 'emergencywatch-env'
+        STORAGE_ACCOUNT                 = 'emergencywatchfe'
+        AZURE_EVENTHUBS_NAMESPACE       = 'emergencywatch-eventhub'
+        SPRING_KAFKA_BOOTSTRAP_SERVERS  = 'emergencywatch-eventhub.servicebus.windows.net:9093'
+        SPRING_PROFILES_ACTIVE  = 'prod'
 
         // Cloudflare (optional - for cache purge)
         CLOUDFLARE_ZONE_ID   = credentials('CLOUDFLARE_ZONE_ID')
@@ -298,30 +301,33 @@ pipeline {
             }
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    sh '''
-                        # Setup variables for YAML substitution
-                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
-                        export LOCATION="$LOCATION"
-                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
-                        export RESOURCE_GROUP="$RESOURCE_GROUP"
-                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
-                        export ACR_NAME="$ACR_NAME"
+                            sh '''
+                                echo "================================================"
+                                echo "Deploying vehicle-simulator: $FULL_IMAGE_NAME"
+                                echo "================================================"
 
-                        echo "================================================"
-                        echo "Deploying vehicle-simulator: $FULL_IMAGE_NAME"
-                        echo "================================================"
+                                # 1. Export Config Variables (Non-Secrets)
+                                export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/vehicle-simulator:$GIT_COMMIT_SHORT"
+                                export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                                export RESOURCE_GROUP="$RESOURCE_GROUP"
+                                export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                                export ACR_NAME="$ACR_NAME"
+                                export LOCATION="$LOCATION"
+                                export SPRING_KAFKA_BOOTSTRAP_SERVERS="$SPRING_KAFKA_BOOTSTRAP_SERVERS"
+                                export AZURE_EVENTHUBS_NAMESPACE="$AZURE_EVENTHUBS_NAMESPACE"
+                                export SPRING_PROFILES_ACTIVE="$SPRING_PROFILES_ACTIVE"
 
-                        # Generate final YAML with substitutions
-                        envsubst < infra/containerapps/ew-vehicle-simulator.yml > deploy-simulator.yml
+                                # 2. Generate YAML
+                                envsubst < infra/containerapps/ew-vehicle-simulator.yml > deploy-simulator.yml
 
-                        # Deploy using YAML
-                        az containerapp create \
-                            --name vehicle-simulator \
-                            --resource-group $RESOURCE_GROUP \
-                            --yaml deploy-simulator.yml
-
-                        echo "✅ vehicle-simulator deployed with full configuration"
-                    '''
+                                # 3. Deploy using YAML
+                                az containerapp create \
+                                    --name vehicle-simulator \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $ENVIRONMENT_NAME \
+                                    --yaml deploy-simulator.yml
+                                       echo "✅ vehicle-simulator deployed with full configuration"
+                            '''
                 }
             }
         }
@@ -332,30 +338,33 @@ pipeline {
             }
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    sh '''
-                        # Setup variables for YAML substitution
-                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
-                        export LOCATION="$LOCATION"
-                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
-                        export RESOURCE_GROUP="$RESOURCE_GROUP"
-                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
-                        export ACR_NAME="$ACR_NAME"
+                            sh '''
+                                echo "================================================"
+                                echo "Deploying data-processor..."
+                                echo "================================================"
 
-                        echo "================================================"
-                        echo "Deploying data-processor: $FULL_IMAGE_NAME"
-                        echo "================================================"
+                                 # 1. Export Config Variables (Non-Secrets)
+                                export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/data-processor:$GIT_COMMIT_SHORT"
+                                export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                                export RESOURCE_GROUP="$RESOURCE_GROUP"
+                                export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                                export ACR_NAME="$ACR_NAME"
+                                export LOCATION="$LOCATION"
+                                export SPRING_KAFKA_BOOTSTRAP_SERVERS="$SPRING_KAFKA_BOOTSTRAP_SERVERS"
+                                export AZURE_EVENTHUBS_NAMESPACE="$AZURE_EVENTHUBS_NAMESPACE"
+                                export SPRING_PROFILES_ACTIVE="$SPRING_PROFILES_ACTIVE"
 
-                        # Generate final YAML with substitutions
-                        envsubst < infra/containerapps/ew-data-processor.yml > deploy-processor.yml
+                                # 2. Generate YAML
+                                envsubst < infra/containerapps/ew-data-processor.yml > deploy-processor.yml
 
-                        # Deploy using YAML
-                        az containerapp create \
-                            --name data-processor \
-                            --resource-group $RESOURCE_GROUP \
-                            --yaml deploy-processor.yml
-
-                        echo "✅ data-processor deployed with full configuration"
-                    '''
+                                # 3. Deploy using YAML
+                                az containerapp create \
+                                    --name data-processor \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $ENVIRONMENT_NAME \
+                                    --yaml deploy-processor.yml
+                                       echo "✅ data-processor deployed with full configuration"
+                            '''
                 }
             }
         }
@@ -366,62 +375,36 @@ pipeline {
             }
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    sh '''
-                        echo "🔍 Checking required tools on Jenkins agent..."
+                            sh '''
+                                echo "================================================"
+                                echo "Deploying analytics-service..."
+                                echo "================================================"
 
-                        which envsubst || {
-                           echo "❌ envsubst not installed (package: gettext)"
-                           exit 1
-                        }
+                                # 1. Export Config Variables (Non-Secrets)
+                                export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
+                                export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                                export RESOURCE_GROUP="$RESOURCE_GROUP"
+                                export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                                export ACR_NAME="$ACR_NAME"
+                                export LOCATION="$LOCATION"
+                                export SPRING_KAFKA_BOOTSTRAP_SERVERS="$SPRING_KAFKA_BOOTSTRAP_SERVERS"
+                                export AZURE_EVENTHUBS_NAMESPACE="$AZURE_EVENTHUBS_NAMESPACE"
+                                export SPRING_PROFILES_ACTIVE="$SPRING_PROFILES_ACTIVE"
 
-                        echo "✅ Tool validation complete"
+                                # 2. Generate YAML
+                                # CHECK THE FILENAME HERE: Ensure 'containerapp.yml' is the correct name in this folder!
+                                envsubst < infra/containerapps/ew-analytics-service.yml > deploy-analytics.yml
 
-                        # Setup variables for YAML substitution
-                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/analytics-service:$GIT_COMMIT_SHORT"
-                        export LOCATION="$LOCATION"
-                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
-                        export RESOURCE_GROUP="$RESOURCE_GROUP"
-                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
-                        export ACR_NAME="$ACR_NAME"
+                                # 3. Deploy using YAML with ingres enable
+                                az containerapp create \
+                                    --name analytics-service \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $ENVIRONMENT_NAME \
+                                    --ingress external --target-port 8082 --transport auto \
+                                    --yaml deploy-analytics.yml
 
-                        echo "================================================"
-                        echo "Deploying analytics-service: $FULL_IMAGE_NAME"
-                        echo "================================================"
-
-                        # Generate final YAML with substitutions
-                        envsubst < infra/containerapps/ew-analytics-service.yml > deploy-analytics.yml
-
-                        # --- DEBUG START ---
-                        echo "===== Generated YAML ====="
-                        sed -n '1,200p' deploy-analytics.yml
-                        echo "=========================="
-
-                        test -s deploy-analytics.yml || {
-                          echo "❌ deploy-analytics.yml is empty"
-                          exit 1
-                        }
-
-                        echo "🔍 CHECKING VARIABLES:"
-                        echo "SUB_ID: '${SUB_ID}'"
-                        echo "LOCATION: '${LOCATION}'"
-                        echo "FULL_IMAGE_NAME: '${FULL_IMAGE_NAME}'"
-                        echo "ENVIRONMENT_NAME": '${ENVIRONMENT_NAME}'""
-
-                        echo "📄 CHECKING GENERATED YAML:"
-                        # Use cat -e to show hidden characters (like tabs vs spaces)
-                        cat -e deploy-analytics.yml
-                        # --- DEBUG END ---
-
-                        # Deploy using YAML with system-assigned managed identity
-                        az containerapp create \
-                            --name analytics-service \
-                            --resource-group $RESOURCE_GROUP \
-                            --environment $ENVIRONMENT_NAME \
-                            --system-assigned \
-                            --yaml deploy-analytics.yml
-
-                        echo "✅ analytics-service deployed with full configuration"
-                    '''
+                                echo "✅ analytics-service deployed with full configuration"
+                            '''
                 }
             }
         }
@@ -432,30 +415,36 @@ pipeline {
             }
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    sh '''
-                        # Setup variables for YAML substitution
-                        export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
-                        export LOCATION="$LOCATION"
-                        export SUB_ID="$AZURE_SUBSCRIPTION_ID"
-                        export RESOURCE_GROUP="$RESOURCE_GROUP"
-                        export ENVIRONMENT_NAME="$CONTAINER_ENV"
-                        export ACR_NAME="$ACR_NAME"
+                            sh '''
+                                echo "================================================"
+                                echo "Deploying notification-service..."
+                                echo "================================================"
 
-                        echo "================================================"
-                        echo "Deploying notification-service: $FULL_IMAGE_NAME"
-                        echo "================================================"
+                                # 1. Export Config Variables (Non-Secrets)
+                                export FULL_IMAGE_NAME="$ACR_LOGIN_SERVER/emergencywatch/notification-service:$GIT_COMMIT_SHORT"
+                                export SUB_ID="$AZURE_SUBSCRIPTION_ID"
+                                export RESOURCE_GROUP="$RESOURCE_GROUP"
+                                export ENVIRONMENT_NAME="$CONTAINER_ENV"
+                                export ACR_NAME="$ACR_NAME"
+                                export LOCATION="$LOCATION"
+                                export SPRING_KAFKA_BOOTSTRAP_SERVERS="$SPRING_KAFKA_BOOTSTRAP_SERVERS"
+                                export AZURE_EVENTHUBS_NAMESPACE="$AZURE_EVENTHUBS_NAMESPACE"
+                                export SPRING_PROFILES_ACTIVE="$SPRING_PROFILES_ACTIVE"
 
-                        # Generate final YAML with substitutions
-                        envsubst < infra/containerapps/ew-notification-service.yml > deploy-alerts.yml
+                                # 2. Generate YAML
+                                # CHECK THE FILENAME HERE: Ensure 'containerapp.yml' is the correct name in this folder!
+                                envsubst < infra/containerapps/ew-notification-service.yml > deploy-alerts.yml
 
-                        # Deploy using YAML
-                        az containerapp create \
-                            --name notification-service \
-                            --resource-group $RESOURCE_GROUP \
-                            --yaml deploy-alerts.yml
+                                # 3. Deploy using YAML with ingres enable
+                                az containerapp create \
+                                    --name notification-service \
+                                    --resource-group $RESOURCE_GROUP \
+                                    --environment $ENVIRONMENT_NAME \
+                                    --ingress external --target-port 8083 --transport auto \
+                                    --yaml deploy-alerts.yml
 
-                        echo "✅ notification-service deployed with full configuration"
-                    '''
+                                echo "✅ notification-service deployed with full configuration"
+                            '''
                 }
             }
         }

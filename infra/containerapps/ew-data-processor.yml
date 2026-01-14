@@ -1,39 +1,84 @@
-name: data-processor
-
-managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
-
+identity:
+  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
+  type: SystemAssigned
 properties:
+  managedEnvironmentId: /subscriptions/${SUB_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.App/managedEnvironments/${ENVIRONMENT_NAME}
   configuration:
     activeRevisionsMode: Single
-
     registries:
-      - server: ${ACR_NAME}.azurecr.io
-        identity: system
-
+    - server: ${ACR_NAME}.azurecr.io
+      identity: system
+    secrets:
+    - name: spring-datasource-url
+      keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/spring-datasource-url/8b641dd740f94d7b9ad898013c7331ec"
+      identity: system
+    - name: spring-datasource-username
+      keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/spring-datasource-username/7d696264bbf44a2f8bf4ad776f3acc33"
+      identity: system
+    - name: spring-datasource-password
+      keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/spring-datasource-password/751da9e2eb01404993f2aba5091b41db"
+      identity: system
+    - name: eventhub-connection-string
+      keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/eventhub-connection-string/bef4865e6f45499c90806824d3fcb667"
+      identity: system
+    - name: eventhub-sasl-config
+      keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/eventhub-sasl-config/0affb29645024d4c8d1f73d379d2906f"
+      identity: system
   template:
     containers:
-      - name: data-processor
-        image: ${FULL_IMAGE_NAME}
-
-        resources:
-          cpu: 0.5
-          memory: 1Gi
-
-        env:
-          - name: SPRING_PROFILES_ACTIVE
-            value: prod
-
+    - image: ${FULL_IMAGE_NAME}
+      name: data-processor
+      resources:
+        cpu: 0.5
+        memory: 1Gi
+      env:
+      - name: "SPRING_PROFILES_ACTIVE"
+        value: "prod"
+      # --- Database ---
+      - name: "SPRING_DATASOURCE_URL"
+        secretRef: spring-datasource-url
+      - name: "SPRING_DATASOURCE_USERNAME"
+        secretRef: spring-datasource-username
+      - name: "SPRING_DATASOURCE_PASSWORD"
+        secretRef: spring-datasource-password
+      # Kafka / Event hubs
+      - name: "SPRING_KAFKA_BOOTSTRAP_SERVERS"
+        value: "emergencywatch-eventhub.servicebus.windows.net:9093"
+      # standard event hub configs
+      - name: "SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL"
+        value: "SASL_SSL"
+      - name: "SPRING_KAFKA_PROPERTIES_SASL_MECHANISM"
+        value: "PLAIN"
+      - name: "AZURE_EVENTHUBS_NAMESPACE"
+        value: "emergencywatch-eventhub"
+      - name: "SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG"
+        secretRef: eventhub-sasl-config
+      - name: "AZURE_EVENTHUBS_CONNECTION_STRING"
+        secretRef: eventhub-connection-string
     scale:
       minReplicas: 0
       maxReplicas: 1
       rules:
-        - name: eventhub-scale
-          custom:
-            type: azure-eventhub
-            metadata:
-              eventHubName: vehicle-telemetry
-              consumerGroup: $Default
-              unprocessedEventThreshold: "10"
-            auth:
-              - triggerParameter: connection
-                secretRef: eventhub-connection
+      - name: eventhub-scale
+        custom:
+          type: azure-eventhub
+          metadata:
+            eventHubName: vehicle-telemetry
+            consumerGroup: $Default
+            unprocessedEventThreshold: "10"
+      - name: weekday-active
+        custom:
+          type: cron
+          metadata:
+            timezone: "Europe/Berlin"
+            start: "55 6 * * 1-5"         # 6:55 AM Mon-Fri
+            end: "0 18 * * 1-5"           # 6:00 PM Mon-Fri
+            desiredReplicas: "1"
+      - name: weekend-active
+        custom:
+          type: cron
+          metadata:
+            timezone: "Europe/Berlin"
+            start: "55 9 * * 0,6"         # 9:55 AM Sat-Sun
+            end: "0 13 * * 0,6"           # 1:00 PM Sat-Sun
+            desiredReplicas: "1"
