@@ -10,15 +10,15 @@ properties:
       identity: SystemAssigned
     secrets:
     - name: spring-datasource-url
-      value: "${SPRING_DATASOURCE_URL}"
+      value: '${SPRING_DATASOURCE_URL}'
     - name: spring-datasource-username
-      value: "${SPRING_DATASOURCE_USERNAME}"
+      value: '${SPRING_DATASOURCE_USERNAME}'
     - name: spring-datasource-password
-      value: "${SPRING_DATASOURCE_PASSWORD}"
+      value: '${SPRING_DATASOURCE_PASSWORD}'
     - name: eventhub-connection-string
-      value: "${AZURE_EVENTHUBS_CONNECTION_STRING}"
+      value: '${AZURE_EVENTHUBS_CONNECTION_STRING}'
     - name: eventhub-sasl-config
-      value: "${SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG}"
+      value: '${SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG}'
   template:
     containers:
     - image: ${FULL_IMAGE_NAME}
@@ -60,7 +60,7 @@ properties:
         secretRef: spring-datasource-password
       # Kafka / Event hubs
       - name: "SPRING_KAFKA_BOOTSTRAP_SERVERS"
-        value: "${SPRING_KAFKA_BOOTSTRAP_SERVERS}"
+        value: '${SPRING_KAFKA_BOOTSTRAP_SERVERS}'
       # standard event hub configs
       - name: "SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL"
         value: "SASL_SSL"
