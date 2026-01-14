@@ -7,7 +7,7 @@ properties:
     activeRevisionsMode: Single
     registries:
     - server: ${ACR_NAME}.azurecr.io
-      identity: SystemAssigned
+      identity: system
     secrets:
     - name: spring-datasource-url
       value: '${SPRING_DATASOURCE_URL}'
