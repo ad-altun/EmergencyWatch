@@ -34,8 +34,8 @@ export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: Sid
                         className={ ( { isActive } ) =>
                             `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                                 isActive
-                                    ? "bg-slate-800 text-white"
-                                    : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                             }`
                         }
                     >
@@ -45,11 +45,11 @@ export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: Sid
                 )) }
             </nav>
 
-            <div className="p-3 border-t border-slate-700 flex-shrink-0">
+            <div className="p-3 border-t border-slate-200 flex-shrink-0">
                 <button
                     onClick={ onToggle }
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-slate-500
-                        hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-slate-600
+                        hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                     { collapsed ? <ChevronRight size={ 18 }/> : <ChevronLeft size={ 18 }/> }
                     { !collapsed && <span className="text-sm">Collapse</span> }
@@ -70,7 +70,7 @@ export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: Sid
 
             {/* Mobile sidebar */ }
             <aside
-                className={ `fixed top-14 left-0 bottom-0 w-64 bg-slate-900 border-r border-slate-700 z-50 flex flex-col transform transition-transform duration-300 lg:hidden ${
+                className={ `fixed top-14 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col transform transition-transform duration-300 lg:hidden ${
                     mobileOpen ? "translate-x-0" : "-translate-x-full"
                 }` }
             >
@@ -79,7 +79,7 @@ export function Sidebar( { collapsed, onToggle, mobileOpen, onMobileClose }: Sid
 
             {/* Desktop sidebar */ }
             <aside
-                className={ `hidden lg:flex flex-col bg-slate-900 border-r border-slate-700 transition-all duration-300 flex-shrink-0 ${
+                className={ `hidden lg:flex flex-col bg-white border-r border-slate-200 transition-all duration-300 flex-shrink-0 ${
                     collapsed ? "w-16" : "w-56"
                 }` }
             >

@@ -24,6 +24,9 @@ properties:
     - name: eventhub-sasl-config
       keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/eventhub-sasl-config/0affb29645024d4c8d1f73d379d2906f"
       identity: system
+    - name: storage-connection-string
+      keyVaultUrl: "https://emergencywatch-kv.vault.azure.net/secrets/storage-connection-string/7e5998b1a1fa4bfaae71b24de3bc22eb"
+      identity: system
   template:
     containers:
     - image: ${FULL_IMAGE_NAME}
@@ -77,11 +80,40 @@ properties:
         secretRef: eventhub-sasl-config
       - name: "AZURE_EVENTHUBS_CONNECTION_STRING"
         secretRef: eventhub-connection-string
+      - name: "AZURE_STORAGE_CONNECTION_STRING"
+        secretRef: storage-connection-string
     scale:
       minReplicas: 0
       maxReplicas: 1
+      cooldownPeriod: 300
       rules:
       - name: http-scale
         http:
           metadata:
             concurrentRequests: "50"
+      - name: notification-eventhub-scale
+        custom:
+          type: azure-eventhub
+          metadata:
+            storageAccountName: "emergencywatchfe"
+            connectionFromEnv: AZURE_EVENTHUBS_CONNECTION_STRING
+            storageConnectionFromEnv: AZURE_STORAGE_CONNECTION_STRING
+            eventHubName: vehicle-alerts
+            consumerGroup: notification-service-group
+            unprocessedEventThreshold: "10"
+            activationUnprocessedEventThreshold: "5"
+            blobContainer: "notification-checkpoints"
+            checkpointStrategy: "blobMetadata"
+          auth:
+          - triggerParameter: connection
+            secretRef: eventhub-connection-string
+          - triggerParameter: storageConnection
+            secretRef: storage-connection-string
+      - name: weekday-active
+        custom:
+          type: cron
+          metadata:
+            timezone: "Europe/Berlin"
+            start: "55 6 * * 1-5"         # 6:55 AM Mon-Fri
+            end: "0 17 * * 1-5"           # 5:00 PM Mon-Fri
+            desiredReplicas: "1"

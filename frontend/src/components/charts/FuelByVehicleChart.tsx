@@ -45,7 +45,7 @@ export function FuelByVehicleChart({ data }: FuelByVehicleChartProps) {
                     return vehicle ? vehicle.totalConsumed : 0;
                 }),
                 backgroundColor: allVehicleIds.map(vehicleId => vehicleColorMap[vehicleId]),
-                borderColor: "#1e293b",
+                borderColor: "#f1f5f9",
                 borderWidth: 2,
             },
         ],
@@ -57,7 +57,7 @@ export function FuelByVehicleChart({ data }: FuelByVehicleChartProps) {
         plugins: {
             legend: {
                 position: "right" as const,
-                labels: { color: "#94a3b8" },
+                labels: { color: "#64748b" },
             },
             tooltip: {
                 callbacks: {

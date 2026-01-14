@@ -8,7 +8,7 @@ export function MainLayout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <div className="h-screen w-screen bg-slate-950 text-white flex flex-col overflow-hidden">
+        <div className="h-screen w-screen bg-slate-50 text-slate-900 flex flex-col overflow-hidden">
             <Header onMenuClick={() => setMobileMenuOpen(true)} />
 
             <div className="flex flex-1 min-h-0">
@@ -19,7 +19,7 @@ export function MainLayout() {
                     onMobileClose={() => setMobileMenuOpen(false)}
                 />
 
-                <main className="flex-1 flex flex-col min-h-0 min-w-0 p-5 overflow-auto mb-8">
+                <main className="flex-1 flex flex-col min-h-0 min-w-0 p-5 overflow-auto mb-8 bg-slate-50">
                     <Outlet />
                 </main>
             </div>

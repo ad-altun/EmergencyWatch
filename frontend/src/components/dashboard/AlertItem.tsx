@@ -10,16 +10,16 @@ interface AlertItemProps {
 
 export function AlertItem({ alert, onAcknowledge, onResolve, isLoading }: AlertItemProps) {
     const severityStyles = alert.alertType === "HIGH_ENGINE_TEMP" || alert.alertType === "LOW_FUEL"
-        ? "bg-red-500/20 text-red-400 border-red-500/30"
-        : "bg-amber-500/20 text-amber-400 border-amber-500/30";
+        ? "text-red-700 border-red-300"
+        : "text-amber-500 border-amber-300";
 
     const isAcknowledged = alert.status === "ACKNOWLEDGED";
 
     return (
-        <div className={`flex items-center gap-3 p-3 rounded-lg border ${severityStyles}`}>
-            <AlertTriangle size={16} className="flex-shrink-0" />
+        <div className={`flex items-center gap-3 p-3 rounded-lg border`}>
+            <AlertTriangle size={16} className={`flex-shrink-0 ${severityStyles}`} />
             <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">
+                <p className="font-medium text-xs ">
                     {alert.vehicleId}: {alert.alertType.replace(/_/g, " ")}
                 </p>
                 <p className="text-xs opacity-70">{alert.message}</p>
@@ -29,7 +29,7 @@ export function AlertItem({ alert, onAcknowledge, onResolve, isLoading }: AlertI
                     <button
                         onClick={() => onAcknowledge(alert.id)}
                         disabled={isLoading}
-                        className="p-1.5 rounded hover:bg-white/10 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded hover:bg-black/10 transition-colors disabled:opacity-50"
                         title="Acknowledge"
                     >
                         <Check size={14} />
@@ -39,7 +39,7 @@ export function AlertItem({ alert, onAcknowledge, onResolve, isLoading }: AlertI
                     <button
                         onClick={() => onResolve(alert.id)}
                         disabled={isLoading}
-                        className="p-1.5 rounded hover:bg-white/10 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded hover:bg-black/10 transition-colors disabled:opacity-50"
                         title="Resolve"
                     >
                         <CheckCheck size={14} />

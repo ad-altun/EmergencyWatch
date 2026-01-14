@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 export function AnalyticsChartSkeleton() {
     return (
-        <div className="bg-slate-800 rounded-lg p-4">
+        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
             <Skeleton className="h-6 w-40 mb-4" />
             <div className="space-y-3">
                 <Skeleton className="h-48 w-full" />

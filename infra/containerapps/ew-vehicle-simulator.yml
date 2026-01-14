@@ -49,13 +49,5 @@ properties:
           metadata:
             timezone: "Europe/Berlin"
             start: "55 6 * * 1-5"         # 6:55 AM Mon-Fri
-            end: "0 18 * * 1-5"           # 6:00 PM Mon-Fri
-            desiredReplicas: "1"
-      - name: weekend-active
-        custom:
-          type: cron
-          metadata:
-            timezone: "Europe/Berlin"
-            start: "55 9 * * 0,6"         # 9:55 AM Sat-Sun
-            end: "0 13 * * 0,6"           # 1:00 PM Sat-Sun
+            end: "0 17 * * 1-5"           # 5:00 PM Mon-Fri
             desiredReplicas: "1"

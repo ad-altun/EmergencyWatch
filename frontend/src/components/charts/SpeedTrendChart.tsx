@@ -48,7 +48,7 @@ export function SpeedTrendChart({ data }: SpeedTrendChartProps) {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                labels: { color: "#94a3b8" },
+                labels: { color: "#475569" },
             },
             tooltip: {
                 callbacks: {
@@ -61,15 +61,15 @@ export function SpeedTrendChart({ data }: SpeedTrendChartProps) {
         scales: {
             x: {
                 ticks: {
-                    color: "#94a3b8",
+                    color: "#64748b",
                     maxRotation: 45,
                     minRotation: 45,
                 },
-                grid: { color: "#334155" },
+                grid: { color: "#e2e8f0" },
             },
             y: {
-                ticks: { color: "#94a3b8" },
-                grid: { color: "#334155" },
+                ticks: { color: "#64748b" },
+                grid: { color: "#e2e8f0" },
                 beginAtZero: true,
             },
         },
