@@ -26,6 +26,7 @@ deployment-designed to showcase architectural decision-making and production-rea
 ✅ **Production Observability** - SonarQube integration, OpenAPI documentation, structured logging  
 ✅ **Domain-driven Design** - Leverages 2.5 years of embedded systems experience with vehicle telemetry  
 ✅ **CI/CD integration** with self-hosted Jenkins environment
+
 ---
 
 ## Screenshots
@@ -147,8 +148,6 @@ Consumes telemetry, validates data, detects alert conditions, and persists opera
 - **Why deduplicate here?** - Prevents cascading duplicate alerts through the system
 - **Why separate alert topic?** - Isolates critical alerts from high-volume telemetry stream
 
-**API:** http://localhost:8080 (Swagger: http://localhost:8080/swagger-ui.html)
-
 ---
 
 #### 3. **Notification Service** (Alert Management & Lifecycle)
@@ -180,8 +179,6 @@ Alert {
 - `PATCH /api/alerts/{id}/acknowledge` - Operator acknowledges alert
 - `PATCH /api/alerts/{id}/resolve` - Alert condition cleared
 
-**API:** http://localhost:8083 (Swagger: http://localhost:8083/swagger-ui.html)
-
 ---
 
 #### 4. **Analytics Service** (Real-time & Historical Metrics)
@@ -203,8 +200,6 @@ Provides fleet-wide and per-vehicle analytics with scheduled aggregation for tim
 - `GET /api/analytics/vehicles` - Per-vehicle current status and metrics
 - `GET /api/analytics/history` - Historical aggregated data from MongoDB
 - `GET /api/analytics/stats` - Key statistics and trends
-
-**API:** http://localhost:8082 (Swagger: http://localhost:8082/swagger-ui.html)
 
 ---
 
@@ -304,8 +299,6 @@ open http://localhost:8083/swagger-ui.html
 | **Frontend Dashboard** | http://localhost:5173 | Real-time fleet monitoring |
 | **Analytics API** | http://localhost:8082 | Fleet metrics & historical data |
 | **Notifications API** | http://localhost:8083 | Alert management |
-| **Analytics Swagger** | http://localhost:8082/swagger-ui.html | Interactive API documentation |
-| **Notifications Swagger** | http://localhost:8083/swagger-ui.html | Interactive API documentation |
 
 ---
 
@@ -344,13 +337,13 @@ docs/api-documentation/swagger/
 **Example Response:**
 ```json
 {
-  "totalVehicles": 10,
+  "totalVehicles": 5,
   "averageFuelLevel": 65.3,
   "averageEngineTemp": 72.5,
-  "activeAlerts": 3,
+  "activeAlerts": 11,
   "vehiclesByType": {
-    "FIRE_TRUCK": 5,
-    "AMBULANCE": 3,
+    "FIRE_TRUCK": 1,
+    "AMBULANCE": 2,
     "POLICE": 2
   }
 }
