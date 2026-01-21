@@ -87,28 +87,6 @@ properties:
       maxReplicas: 1
       cooldownPeriod: 300
       rules:
-      - name: http-scale
-        http:
-          metadata:
-            concurrentRequests: '50'
-      - name: analytics-eventhub-scale
-        custom:
-          type: azure-eventhub
-          metadata:
-            storageAccountName: "emergencywatchfe"
-            connectionFromEnv: AZURE_EVENTHUBS_CONNECTION_STRING
-            storageConnectionFromEnv: AZURE_STORAGE_CONNECTION_STRING
-            eventHubName: vehicle-telemetry
-            consumerGroup: analytics-service-group
-            unprocessedEventThreshold: "10"
-            activationUnprocessedEventThreshold: "5"
-            blobContainer: "analytics-checkpoints"
-            checkpointStrategy: "blobMetadata"
-          auth:
-          - triggerParameter: connection
-            secretRef: eventhub-connection-string
-          - triggerParameter: storageConnection
-            secretRef: storage-connection-string
       - name: weekday-active
         custom:
           type: cron

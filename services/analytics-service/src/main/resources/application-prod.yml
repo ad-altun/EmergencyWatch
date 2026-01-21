@@ -19,6 +19,12 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
+      minimum-idle: 1
+      keepalive-time: 180000
+      idle-timeout: 300000
+      max-lifetime: 600000
+      connection-timeout: 30000
+      validation-timeout: 5000
 
   jpa:
     hibernate:
@@ -44,6 +50,14 @@ management:
     health:
       probes:
         enabled: true
+      show-details: always
+  health:
+    db:
+      enabled: true
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
 
 logging:
   level:

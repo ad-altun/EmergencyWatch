@@ -7,6 +7,7 @@ import de.denizaltun.analyticsservice.dto.VehicleType;
 import de.denizaltun.analyticsservice.entity.VehicleTelemetry;
 import de.denizaltun.analyticsservice.model.FleetMetrics;
 import de.denizaltun.analyticsservice.model.VehicleMetrics;
+import de.denizaltun.analyticsservice.repository.VehicleTelemetryRepository;
 import de.denizaltun.analyticsservice.scheduler.DailyAggregationScheduler;
 import de.denizaltun.analyticsservice.service.AnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +41,7 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
     private final DailyAggregationScheduler scheduler;
+    private final VehicleTelemetryRepository telemetryRepository;
 
     /**
      * Get fleet-wide analytics summary.
@@ -120,6 +122,24 @@ public class AnalyticsController {
                 "trackedVehicles", analyticsService.getTrackedVehicleCount(),
                 "totalTelemetry", analyticsService.getFleetMetrics().getTotalTelemetryReceived().get(),
                 "fleetAverageSpeed", String.format("%.2f km/h", analyticsService.getFleetAverageSpeed())
+        ));
+    }
+
+    /**
+     * Warmup endpoint - executes a lightweight DB query to keep connection pool warm.
+     * Can be called by external health checks or scheduled tasks.
+     */
+    @Operation(summary = "Warmup database connection", description = "Executes a lightweight query to keep DB connections alive")
+    @GetMapping("/warmup")
+    public ResponseEntity<Map<String, Object>> warmup() {
+        long start = System.currentTimeMillis();
+        long count = telemetryRepository.count();
+        long duration = System.currentTimeMillis() - start;
+
+        return ResponseEntity.ok(Map.of(
+                "status", "warm",
+                "recordCount", count,
+                "queryTimeMs", duration
         ));
     }
 

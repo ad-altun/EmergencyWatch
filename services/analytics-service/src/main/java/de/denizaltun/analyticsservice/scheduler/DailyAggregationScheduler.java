@@ -20,18 +20,21 @@ public class DailyAggregationScheduler {
     }
 
     /**
-     * Runs daily at midnight (00:00:00).
+     * Runs daily at 7:00 AM (07:00:00).
      * Aggregates yesterday's telemetry data
      * <p>
-     * Cron expression: "0 0 0 * * *"
+     * Note: Scheduled at 7:00 AM to align with container scaling rules
+     * (container is active 6:55 AM - 5:00 PM Mon-Fri)
+     * <p>
+     * Cron expression: "0 0 7 * * *"
      * - Second: 0
      * - Minute: 0
-     * - Hour: 0 (midnight)
+     * - Hour: 7 (7:00 AM)
      * - Day of month: * (every day)
      * - Month: * (every month)
      * - Day of week: * (every day)
      */
-    @Scheduled(cron = "0 0 0 * * *", zone = "Europe/Berlin")
+    @Scheduled(cron = "0 0 7 * * *", zone = "Europe/Berlin")
     public void aggregateYesterdayMetrics() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
 
