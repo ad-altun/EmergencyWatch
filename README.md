@@ -19,7 +19,7 @@ deployment-designed to showcase architectural decision-making and production-rea
 ### Key Highlights
 
 ✅ **Microservices Architecture** - Event-driven services communicating through Kafka  
-✅ **Polyglot Persistence** - PostgreSQL for transactional data, MongoDB for analytics   
+✅ **PostgreSQL** - Single relational database for all persistent storage (operational data, alerts, analytics aggregations)
 ✅ **Real-time Data Processing** - Sub-second alert detection on telemetry streams  
 ✅ **Cloud-native Design** - Azure Container Apps, Container Registry, API Management  
 ✅ **Comprehensive Testing** - 76+ unit tests with >80% code coverage  
@@ -47,8 +47,7 @@ deployment-designed to showcase architectural decision-making and production-rea
 | **Language** | Java 21 | Modern LTS release with pattern matching and virtual threads |
 | **Framework** | Spring Boot 3.5.7 | Industry-standard with comprehensive ecosystem (Cloud, Data, Web) |
 | **Event Streaming** | Apache Kafka (KRaft mode) | Decoupled communication, event replay capability, horizontal scaling |
-| **Relational DB** | PostgreSQL 17 | ACID compliance for operational alerts and telemetry |
-| **Document DB** | MongoDB 7.0 | Schema flexibility for evolving analytics requirements |
+| **Relational DB** | PostgreSQL 17 | ACID compliance for all persistent storage — telemetry, alerts, and analytics aggregations |
 | **Build Tool** | Maven 3.8+ | Standardized dependency management and plugin ecosystem |
 | **Testing** | JUnit 5 + Mockito | Component and unit testing with industry-standard tools |
 | **API Docs** | Springdoc-OpenAPI 2.x | Automated OpenAPI 3.0 spec generation with Swagger UI |
@@ -191,7 +190,7 @@ Provides fleet-wide and per-vehicle analytics with scheduled aggregation for tim
 - Per-vehicle current metrics
 
 ***Historical Analytics:***
-- Daily aggregation job (runs at midnight UTC)
+- Daily aggregation job (runs at 07:00 Europe/Berlin)
 - Per-vehicle fuel consumption trends
 - Speed distribution by vehicle type
 
@@ -242,7 +241,7 @@ Provides fleet-wide and per-vehicle analytics with scheduled aggregation for tim
 
 ### Option 1: Local Development with Docker Compose
 ```bash
-# 1. Start infrastructure (Kafka, PostgreSQL, MongoDB)
+# 1. Start infrastructure (Kafka, PostgreSQL)
 docker-compose up -d
 
 # 2. Verify services are healthy
@@ -331,7 +330,7 @@ docs/api-documentation/swagger/
 |--------|----------|-------------|----------|
 | GET | `/api/analytics/fleet` | Fleet-wide aggregates | `FleetMetricsDTO` |
 | GET | `/api/analytics/vehicles` | All vehicles + metrics | `List<VehicleAnalyticsDTO>` |
-| GET | `/api/analytics/history?days=7` | Historical metrics | `List<DailyAggregateDTO>` |
+| GET | `/api/analytics/history?days=7` | Historical aggregated metrics from PostgreSQL | `List<DailyAggregateDTO>` |
 | GET | `/api/analytics/stats` | Key statistics | `FleetStatsDTO` |
 
 **Example Response:**
@@ -416,7 +415,6 @@ cd services/analytics-service && mvn test
 | Notification Service | 8083 | Custom to avoid conflict |
 | PostgreSQL | 55432 | Custom to avoid host conflicts |
 | Kafka | 9092 | Standard Kafka port |
-| MongoDB | 27017 | Standard MongoDB port |
 
 ### Environment Variables
 
@@ -435,7 +433,6 @@ SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:55432/emergencywatch
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=postgres
-SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/emergencywatch
 ```
 
 ---
@@ -456,7 +453,7 @@ EmergencyWatch is designed for cloud-native deployment on Azure using:
 - **PostgreSQL Flexible Server** - Managed relational database
 - **Event Hubs (Kafka API)** - Managed Kafka-compatible event streaming
 
-**Current Status:** Services are deployed and functional. Azure deployment strategy leveraging Azure free credits for cost-effective cloud-native learning and demonstration.
+**Current Status:** Infrastructure is temporarily paused. All services remain containerized and deployable. Source code and documentation are available on GitHub.
 
 ---
 
@@ -523,7 +520,7 @@ This means you're free to use, modify, and distribute this code with proper attr
 
 ## Contact & Social
 
-I'm actively searching for remote Java backend development positions. Let's connect:
+Let's connect:
 
 <a href="https://github.com/ad-altun"><img src="https://img.shields.io/badge/GitHub-ad--altun-181717?style=flat&logo=github&logoColor=white" alt="GitHub"></a>&nbsp;&nbsp;
 <a href="https://www.linkedin.com/in/abidin-deniz-altun-46906a71/"><img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat&logo=linkedin" alt="LinkedIn"></a>&nbsp;&nbsp;&nbsp;
