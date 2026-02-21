@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>EmergencyWatch – Archived</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #1d4ed8;
+            color: #bfdbfe;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.9rem;
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        .status-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .status-box p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            line-height: 1.7;
+        }
+
+        .status-box p + p {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #1e293b;
+        }
+
+        .lang {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            margin-right: 0.4rem;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            font-size: 0.78rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 6px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #2563eb;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.75rem 1.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+            margin-left: 0.5rem;
+        }
+
+        .btn-ghost:hover {
+            border-color: #64748b;
+            color: #cbd5e1;
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            font-size: 0.78rem;
+            color: #475569;
+        }
+
+        .footer a {
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="badge">Project Archived</div>
+    <h1>EmergencyWatch</h1>
+    <p class="subtitle">Real-Time Emergency Vehicle Fleet Monitoring</p>
+
+    <div class="status-box">
+        <p>
+            <span class="lang">EN</span>
+            This project is no longer actively hosted. The infrastructure has been paused to preserve resources.
+            The full source code, documentation, and architecture overview are available on GitHub.
+        </p>
+        <p>
+            <span class="lang">DE</span>
+            Dieses Projekt wird derzeit nicht aktiv gehostet. Die Infrastruktur wurde pausiert.
+            Der vollständige Quellcode, die Dokumentation und die Architekturübersicht sind auf GitHub verfügbar.
+        </p>
+    </div>
+
+    <div class="tech-tags">
+        <span class="tag">Java 21</span>
+        <span class="tag">Spring Boot 3</span>
+        <span class="tag">React 19</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">PostgreSQL</span>
+        <span class="tag">Docker</span>
+        <span class="tag">Microservices</span>
+        <span class="tag">Azure</span>
+        <span class="tag">Apache Kafka</span>
+        <span class="tag">Maven</span>
+        <span class="tag">Jenkins</span>
+    </div>
+
+    <div>
+        <a class="btn" href="https://github.com/ad-altun/EmergencyWatch" target="_blank" rel="noopener">
+            <!-- GitHub icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577
+          0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756
+          -1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304
+          3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931
+          0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322
+          3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404
+          2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84
+          1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823
+          2.222 0 1.606-.015 2.898-.015 3.293 0 .319.216.694.825.576C20.565 21.795
+          24 17.298 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            View on GitHub
+        </a>
+<!--        <a class="btn-ghost" href="https://denizaltun.de" target="_blank" rel="noopener">Portfolio</a>-->
+    </div>
+
+    <div class="footer">
+        Built by <a href="https://denizaltun.de">Deniz Altun</a> &nbsp;·&nbsp;
+        <a href="https://github.com/ad-altun">github.com/ad-altun</a>
+    </div>
+</div>
+</body>
+</html>
